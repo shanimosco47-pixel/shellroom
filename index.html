@@ -983,7 +983,7 @@ const SS_KEY = 'cabiran.shellroom.v1';
 // migration ladder on every load. `SCHEMA_VERSION` is bumped whenever a shape
 // change needs a non-trivial fix-up; `MIGRATIONS[n]` converts v(n) to v(n+1).
 // ---------------------------------------------------------------------------
-const SCHEMA_VERSION = 2;
+const SCHEMA_VERSION = 3;
 const MIGRATIONS = {
   1: (s) => {
     // v1 → v2: ensure new fields introduced since launch exist so older saved
@@ -996,6 +996,16 @@ const MIGRATIONS = {
     s.logs = s.logs || { downtime: [], cycles: [] };
     if (!Array.isArray(s.logs.spills)) s.logs.spills = [];
     s._schemaVersion = 2;
+    return s;
+  },
+  2: (s) => {
+    // v2 → v3: replace the original placeholder dry-after gates and sand-cleaning
+    // duration with the real plant values. These are physical hard constraints,
+    // not user-tunable preferences, so we overwrite unconditionally.
+    s.config = s.config || {};
+    s.config.postDipDryMin = [240, 240, 480, 480, 480, 480, 0, 720];
+    s.config.sandblast = Object.assign({}, s.config.sandblast, { durationMin: 60 });
+    s._schemaVersion = 3;
     return s;
   },
 };
@@ -1123,8 +1133,8 @@ const DEFAULT_STATE = () => {
       //   [1] = after Dip 2
       //   [2..6] = after Dip 3..Dip 7
       //   [7] = after Seal (0 in practice — the 12 h hang-dry follows)
-      postDipDryMin: [15, 10, 10, 10, 10, 10, 10, 0],
-      sandblast: { durationMin: 45 },
+      postDipDryMin: [240, 240, 480, 480, 480, 480, 0, 720],
+      sandblast: { durationMin: 60 },
       hangCycleMin: 3,
       unhangCycleMin: 3,
       robotUptimePct: 92,
@@ -1639,7 +1649,7 @@ function renderAll() {
 function renderConfigInputs() {
   const ctTable = document.getElementById('cycleTable');
   const labels = ['Dip 1','Dip 2','Dip 3','Dip 4','Dip 5','Dip 6','Dip 7','Seal'];
-  if (!state.config.postDipDryMin) state.config.postDipDryMin = [15,10,10,10,10,10,10,0];
+  if (!state.config.postDipDryMin) state.config.postDipDryMin = [240,240,480,480,480,480,0,720];
   if (ctTable) {
     clear(ctTable);
     const hdr = el('div', {
