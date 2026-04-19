@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Cabiran planner — regression tests</title>
+<style>
+  body { font-family: 'SF Mono', Menlo, Consolas, monospace; background: #FAF7F2; color: #0A1F3D; margin: 0; padding: 24px; }
+  h1 { font-family: Inter, system-ui, sans-serif; font-weight: 600; margin: 0 0 8px; }
+  p.sub { color: rgba(10,31,61,0.6); margin: 0 0 24px; font-family: Inter, system-ui, sans-serif; }
+  #app { position: fixed; right: -2000px; bottom: -2000px; width: 1400px; height: 900px; border: 0; }
+  table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid rgba(10,31,61,0.1); border-radius: 8px; overflow: hidden; }
+  th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid rgba(10,31,61,0.06); font-size: 13px; vertical-align: top; }
+  th { background: #1F497D; color: #fff; font-family: Inter, system-ui, sans-serif; font-weight: 500; }
+  tr:last-child td { border-bottom: 0; }
+  .pass { color: #166534; font-weight: 600; }
+  .fail { color: #991B1B; font-weight: 600; }
+  .xfail { color: #92400E; font-weight: 600; }
+  .xpass { color: #166534; font-weight: 600; background: #DCFCE7; }
+  .detail { color: rgba(10,31,61,0.55); font-size: 12px; margin-top: 4px; white-space: pre-wrap; font-family: 'SF Mono', Menlo, monospace; }
+  .summary { margin-top: 16px; font-size: 14px; font-family: Inter, system-ui, sans-serif; }
+  .summary span { margin-right: 12px; }
+  code.scn { background: rgba(10,31,61,0.06); padding: 1px 6px; border-radius: 4px; }
+  .run-again { margin-top: 16px; padding: 8px 16px; background: #1F497D; color: #fff; border: 0; border-radius: 6px; cursor: pointer; font-family: Inter, sans-serif; }
+</style>
+</head>
+<body>
+
+<h1>Cabiran planner — regression tests</h1>
+<p class="sub">
+  Loads <code class="scn">index.html</code> in a hidden iframe and exercises <code class="scn">window.computeForecast</code>
+  against pinned scenarios from the Phase-1 plan. Scenarios marked <span class="xfail">EXPECTED-TO-FAIL</span> represent
+  bugs the Phase-2 dispatcher rewrite must fix — they should flip to <span class="xpass">PASSING</span> once that's done.
+</p>
+
+<iframe id="app" src="index.html"></iframe>
+
+<div id="status">Booting iframe…</div>
+<table id="results" hidden>
+  <thead>
+    <tr><th style="width:60px">#</th><th style="width:100px">Status</th><th>Scenario</th><th>Detail</th></tr>
+  </thead>
+  <tbody id="rows"></tbody>
+</table>
+<div class="summary" id="summary"></div>
+<button class="run-again" onclick="location.reload()">Run again</button>
+
+<script>
+// ---------------------------------------------------------------------------
+// Minimal test DSL
+// ---------------------------------------------------------------------------
+const SCENARIOS = [];
+/** Register a scenario. kind: 'must-pass' | 'expected-to-fail'. */
+function scenario(id, name, kind, fn) { SCENARIOS.push({ id, name, kind, fn }); }
+
+function fmt(n) { return (Math.round(n * 100) / 100).toString(); }
+function approx(actual, expected, tolPct) {
+  if (tolPct == null) tolPct = 2;
+  if (expected === 0) return Math.abs(actual) < 0.5;
+  return Math.abs(actual - expected) / Math.abs(expected) * 100 <= tolPct;
+}
+
+// Reset the iframe's `state` to a pristine copy of DEFAULT_STATE_SNAPSHOT, apply
+// the caller's mutator, call computeForecast, and return the result. We reset
+// state in-place (no iframe reload) for speed + determinism.
+async function withState(win, mutate) {
+  const s = JSON.parse(JSON.stringify(win.DEFAULT_STATE_SNAPSHOT));
+  mutate(s);
+  win.__testHooks.setState(s);
+  return win.__testHooks.computeForecast();
+}
+
+// Wait for iframe to have booted, snapshot its DEFAULT_STATE once for reuse.
+function waitForIframe(iframe) {
+  return new Promise((resolve) => {
+    const tick = () => {
+      const win = iframe.contentWindow;
+      if (win && win.__testHooks && win.__testHooks.getState) {
+        if (!win.DEFAULT_STATE_SNAPSHOT) {
+          win.DEFAULT_STATE_SNAPSHOT = JSON.parse(JSON.stringify(win.__testHooks.getState()));
+        }
+        resolve(win);
+      } else setTimeout(tick, 60);
+    };
+    iframe.addEventListener('load', tick);
+    if (iframe.contentDocument && iframe.contentDocument.readyState === 'complete') tick();
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Helpers used by multiple scenarios
+// ---------------------------------------------------------------------------
+const ROBOT_STAGES = new Set([0, 2, 3, 4, 5, 6, 7, 8]);
+
+function stagesOf(forecast, batchIdx) {
+  const b = forecast.batches.find(x => x.batchIdx === batchIdx);
+  return b ? b.stages.slice() : [];
+}
+function findStage(forecast, batchIdx, stage) {
+  return stagesOf(forecast, batchIdx).find(s => s.stage === stage);
+}
+
+// ---------------------------------------------------------------------------
+// S1 — default all-waiting, Batch 1 DeWax-ready at ~169.7h
+// ---------------------------------------------------------------------------
+scenario('S1', 'Default 7×38 all-waiting → Batch #1 DeWax-ready ≈ 169.7h', 'must-pass', async (win) => {
+  const f = await withState(win, s => {
+    s.current.waitingByBatch = [38,38,38,38,38,38,38];
+    s.current.primeByDay     = [0,0,0,0,0,0,0];
+    s.current.backupByDay    = [0,0,0,0,0,0,0];
+    s.current.floorByBatch   = [0,0,0,0,0,0,0];
+    s.current.dewaxedByBatch = [0,0,0,0,0,0,0];
+    s.config.taskPriority    = null;
+  });
+  const dx = findStage(f, 0, 11);
+  const h = dx ? dx.startMin / 60 : -1;
+  const ok = approx(h, 169.7, 3);
+  return { ok, detail: 'Batch #1 DeWax-ready = ' + fmt(h) + 'h (expected ≈ 169.7h, tolerance 3%)' };
+});
+
+// ---------------------------------------------------------------------------
+// S2 — Batch 7 has 18 on backup → Unhang fires early
+// ---------------------------------------------------------------------------
+scenario('S2', 'Batch 7 has 18 on backup → Unhang at ~22h', 'must-pass', async (win) => {
+  const f = await withState(win, s => {
+    s.current.waitingByBatch = [38,38,38,38,38,38,20];
+    s.current.primeByDay     = [0,0,0,0,0,0,0];
+    s.current.backupByDay    = [0,0,0,0,0,0,18];
+    s.config.taskPriority    = null;
+  });
+  const b = f.batches.find(x => x.batchIdx === 6 && x.role === 'in-flight-backup');
+  const un = b && b.stages.find(s => s.stage === 13);
+  const h = un ? un.endMin / 60 : -1;
+  const ok = h > 0 && h < 30;
+  return { ok, detail: 'Batch #7 in-flight-backup Unhang end = ' + fmt(h) + 'h (expected <30h)' };
+});
+
+// ---------------------------------------------------------------------------
+// S3 — Dip 1 reduced from 15 to 10 min → Batch 1 Seal shifts forward
+// ---------------------------------------------------------------------------
+scenario('S3', 'Dip 1: 15→10 min → Batch #1 Seal shifts forward', 'must-pass', async (win) => {
+  const baseline = await withState(win, s => {
+    s.current.waitingByBatch = [38,38,38,38,38,38,38];
+    s.config.taskPriority = null;
+  });
+  const baseSealEnd = findStage(baseline, 0, 8).endMin;
+
+  const sped = await withState(win, s => {
+    s.current.waitingByBatch = [38,38,38,38,38,38,38];
+    s.config.cycleTimes[0] = 10;
+    s.config.taskPriority = null;
+  });
+  const spedSealEnd = findStage(sped, 0, 8).endMin;
+
+  const expectedShift = (5 * 38) / 0.92;
+  const actualShift = baseSealEnd - spedSealEnd;
+  const ok = approx(actualShift, expectedShift, 10);
+  return {
+    ok,
+    detail: 'Seal end shift: ' + fmt(actualShift) + ' min (expected ≈ ' + fmt(expectedShift) + ' min, ±10%)'
+  };
+});
+
+// ---------------------------------------------------------------------------
+// S4 — DST boundary
+// ---------------------------------------------------------------------------
+scenario('S4', 'Anchor straddling DST (22-Mar-2026) → forecast completes', 'must-pass', async (win) => {
+  const dstAnchor = new Date('2026-03-22T06:00:00+02:00').toISOString();
+  const f = await withState(win, s => {
+    s.current.nowTs = dstAnchor;
+    s.config.taskPriority = null;
+  });
+  const dx = findStage(f, 0, 11);
+  const ok = !!dx && dx.startMin > 0 && dx.startMin < 10000;
+  return { ok, detail: 'Forecast completed across DST boundary; Batch #1 DeWax at ' + fmt(dx ? dx.startMin/60 : -1) + 'h.' };
+});
+
+// ---------------------------------------------------------------------------
+// S5 — uptime 100% vs 50% → stage durations scale exactly 2×
+// ---------------------------------------------------------------------------
+scenario('S5', 'uptime 100% vs 50% → stage durations scale 2×', 'must-pass', async (win) => {
+  const high = await withState(win, s => {
+    s.current.waitingByBatch = [38,0,0,0,0,0,0];
+    s.config.robotUptimePct = 100;
+    s.config.taskPriority = null;
+  });
+  const low = await withState(win, s => {
+    s.current.waitingByBatch = [38,0,0,0,0,0,0];
+    s.config.robotUptimePct = 50;
+    s.config.taskPriority = null;
+  });
+  const hiDip1 = findStage(high, 0, 0);
+  const loDip1 = findStage(low, 0, 0);
+  const hiDur = hiDip1.endMin - hiDip1.startMin;
+  const loDur = loDip1.endMin - loDip1.startMin;
+  const ratio = loDur / hiDur;
+  const ok = approx(ratio, 2.0, 5);
+  return { ok, detail: 'Dip 1 duration ratio (50% / 100% uptime) = ' + fmt(ratio) + ' (expected ≈ 2.0, ±5%)' };
+});
+
+// ---------------------------------------------------------------------------
+// S6 — Batch size = 0 → batch absent from forecast
+// ---------------------------------------------------------------------------
+scenario('S6', 'Batch #3 size = 0 → absent from forecast, 0 robot minutes', 'must-pass', async (win) => {
+  const f = await withState(win, s => {
+    s.current.waitingByBatch = [38,38,0,38,38,38,38];
+    s.config.batchSizes = [38,38,0,38,38,38,38];
+    s.config.taskPriority = null;
+  });
+  const b2 = f.batches.find(x => x.batchIdx === 2 && x.size > 0);
+  const totalRobotMinForB2 = stagesOf(f, 2)
+    .filter(s => ROBOT_STAGES.has(s.stage))
+    .reduce((a, s) => a + (s.endMin - s.startMin), 0);
+  const ok = !b2 && totalRobotMinForB2 === 0;
+  return { ok, detail: 'Batch #3 cohorts with size>0: ' + (b2 ? 1 : 0) + '; robot minutes: ' + fmt(totalRobotMinForB2) + ' (both should be 0)' };
+});
+
+// ---------------------------------------------------------------------------
+// S7 — Determinism
+// ---------------------------------------------------------------------------
+scenario('S7', 'Deterministic tiebreak: two identical runs produce identical output', 'must-pass', async (win) => {
+  const f1 = await withState(win, s => { s.current.waitingByBatch = [38,38,0,0,0,0,0]; s.config.taskPriority = null; });
+  const f2 = await withState(win, s => { s.current.waitingByBatch = [38,38,0,0,0,0,0]; s.config.taskPriority = null; });
+  const sig = (f) => f.batches.map(b => b.stages.map(s => s.stage + ':' + Math.round(s.startMin)).join(',')).join('|');
+  const ok = sig(f1) === sig(f2);
+  return { ok, detail: ok ? 'Two runs produce identical output.' : 'Non-deterministic output across runs.' };
+});
+
+// ---------------------------------------------------------------------------
+// S8 — EXPECTED-TO-FAIL — Batch #2 Dip 5 should directly follow Dip 4 (no 239h gap)
+// ---------------------------------------------------------------------------
+scenario('S8', 'Batch #2 Dip 5 follows Dip 4 without 239h gap (post-dispatcher-rewrite)', 'expected-to-fail', async (win) => {
+  const f = await withState(win, s => {
+    s.current.waitingByBatch = [38,38,38,38,38,38,38];
+    s.config.taskPriority = null;
+  });
+  const b1 = f.batches.find(x => x.batchIdx === 1);
+  const d4 = b1.stages.find(s => s.stage === 4);
+  const d5 = b1.stages.find(s => s.stage === 5);
+  const gapMin = d5.startMin - d4.endMin;
+  const gapH = gapMin / 60;
+  const ok = gapH < 24;
+  return {
+    ok,
+    detail: 'Dip 4 end = ' + fmt(d4.endMin/60) + 'h, Dip 5 start = ' + fmt(d5.startMin/60) + 'h, gap = ' + fmt(gapH) + 'h (expected < 24h after dispatcher rewrite).'
+  };
+});
+
+// ---------------------------------------------------------------------------
+// S9 — EXPECTED-TO-FAIL — Per-batch stages appear in non-decreasing startMin order
+// ---------------------------------------------------------------------------
+scenario('S9', 'Every batch\'s stages are in non-decreasing start-time order', 'expected-to-fail', async (win) => {
+  const f = await withState(win, s => {
+    s.current.waitingByBatch = [38,38,38,38,38,38,38];
+    s.config.taskPriority = null;
+  });
+  const offenders = [];
+  for (const b of f.batches) {
+    if (b.batchIdx == null) continue;
+    let prevEnd = -1;
+    for (const st of b.stages) {
+      if (st.startMin < prevEnd - 0.01) {
+        offenders.push('B' + (b.batchIdx+1) + ' stage ' + st.stage + ' starts @' + fmt(st.startMin/60) + 'h before prev ends @' + fmt(prevEnd/60) + 'h');
+      }
+      if (st.endMin > prevEnd) prevEnd = st.endMin;
+    }
+  }
+  const ok = offenders.length === 0;
+  return {
+    ok,
+    detail: ok ? 'All batches in non-decreasing start-time order.' : offenders.length + ' offender(s):\n  ' + offenders.slice(0,5).join('\n  ')
+  };
+});
+
+// ---------------------------------------------------------------------------
+// Runner
+// ---------------------------------------------------------------------------
+async function run() {
+  const iframe = document.getElementById('app');
+  const statusEl = document.getElementById('status');
+  const resultsEl = document.getElementById('results');
+  const rowsEl = document.getElementById('rows');
+  const summaryEl = document.getElementById('summary');
+
+  statusEl.textContent = 'Booting iframe & waiting for computeForecast to be ready…';
+  const win = await waitForIframe(iframe);
+  statusEl.textContent = 'Iframe ready. Running ' + SCENARIOS.length + ' scenarios…';
+  resultsEl.hidden = false;
+
+  let pass = 0, fail = 0, xfail = 0, xpass = 0;
+  for (const sc of SCENARIOS) {
+    const tr = document.createElement('tr');
+    let status, detail, klass;
+    try {
+      const r = await sc.fn(win);
+      if (sc.kind === 'expected-to-fail') {
+        if (r.ok) { status = 'XPASS ✅'; klass = 'xpass'; xpass++; }
+        else      { status = 'XFAIL ⏳'; klass = 'xfail'; xfail++; }
+      } else {
+        if (r.ok) { status = 'PASS ✅'; klass = 'pass'; pass++; }
+        else      { status = 'FAIL ❌'; klass = 'fail'; fail++; }
+      }
+      detail = r.detail;
+    } catch (e) {
+      status = 'FAIL ❌'; klass = 'fail'; fail++;
+      detail = 'Exception: ' + (e && e.message ? e.message : String(e));
+    }
+    const idCell = document.createElement('td'); idCell.textContent = sc.id;
+    const stCell = document.createElement('td'); stCell.className = klass; stCell.textContent = status;
+    const nameCell = document.createElement('td'); nameCell.textContent = sc.name;
+    const detCell = document.createElement('td');
+    const detDiv = document.createElement('div'); detDiv.className = 'detail'; detDiv.textContent = detail || '';
+    detCell.appendChild(detDiv);
+    tr.append(idCell, stCell, nameCell, detCell);
+    rowsEl.appendChild(tr);
+  }
+
+  const total = SCENARIOS.length;
+  statusEl.hidden = true;
+
+  // Build summary via DOM methods (no innerHTML)
+  const mkSpan = (cls, text) => { const s = document.createElement('span'); if (cls) s.className = cls; s.textContent = text; return s; };
+  summaryEl.appendChild(mkSpan(null, pass + ' pass'));
+  summaryEl.appendChild(mkSpan('fail', fail + ' fail'));
+  summaryEl.appendChild(mkSpan('xfail', xfail + ' expected-to-fail (still failing)'));
+  summaryEl.appendChild(mkSpan('xpass', xpass + ' expected-to-fail NOW PASSING'));
+  summaryEl.appendChild(mkSpan(null, '· ' + total + ' total'));
+}
+
+run();
+</script>
+
+</body>
+</html>
