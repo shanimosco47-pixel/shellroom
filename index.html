@@ -983,7 +983,7 @@ const SS_KEY = 'cabiran.shellroom.v1';
 // migration ladder on every load. `SCHEMA_VERSION` is bumped whenever a shape
 // change needs a non-trivial fix-up; `MIGRATIONS[n]` converts v(n) to v(n+1).
 // ---------------------------------------------------------------------------
-const SCHEMA_VERSION = 4;
+const SCHEMA_VERSION = 5;
 const MIGRATIONS = {
   1: (s) => {
     // v1 → v2: ensure new fields introduced since launch exist so older saved
@@ -991,7 +991,7 @@ const MIGRATIONS = {
     s.current = s.current || {};
     if (!('confirmed' in s.current)) s.current.confirmed = false;
     s.config = s.config || {};
-    if (!Array.isArray(s.config.batchSizes)) s.config.batchSizes = [76,76,76,76,76,76,76];
+    if (!Array.isArray(s.config.batchSizes)) s.config.batchSizes = [38,38,38,38,38,38,38];
     if (!Array.isArray(s.rules)) s.rules = (typeof DEFAULT_RULES === 'function') ? DEFAULT_RULES() : [];
     s.logs = s.logs || { downtime: [], cycles: [] };
     if (!Array.isArray(s.logs.spills)) s.logs.spills = [];
@@ -1009,11 +1009,12 @@ const MIGRATIONS = {
     return s;
   },
   3: (s) => {
-    // v3 → v4: batch size cap was 38 (prime capacity). Real batch = 76 shells
-    // (38 on Prime + 38 in Waiting). Set all batches to 76 and put the extra in
-    // Waiting so each batch's total matches the new size.
+    // v3 → v4: normalize batch sizes. A batch holds at most 38 shells (the Prime
+    // conveyor's physical capacity); Waiting is the queue of shells whose batch
+    // hasn't yet been loaded onto Prime. Reset all sizes to 38 and refill Waiting
+    // so the per-batch total matches.
     s.config = s.config || {};
-    s.config.batchSizes = [76,76,76,76,76,76,76];
+    s.config.batchSizes = [38,38,38,38,38,38,38];
     s.current = s.current || {};
     s.current.waitingByBatch = s.current.waitingByBatch || [0,0,0,0,0,0,0];
     for (let i = 0; i < 7; i++) {
@@ -1021,9 +1022,29 @@ const MIGRATIONS = {
       const b = (s.current.backupByDay   || [])[i] || 0;
       const f = (s.current.floorByBatch  || [])[i] || 0;
       const dx= (s.current.dewaxedByBatch|| [])[i] || 0;
-      s.current.waitingByBatch[i] = Math.max(0, 76 - (p + b + f + dx));
+      s.current.waitingByBatch[i] = Math.max(0, 38 - (p + b + f + dx));
     }
     s._schemaVersion = 4;
+    return s;
+  },
+  4: (s) => {
+    // v4 → v5: undo the short-lived size-76 default. Symmetric to migration 3 so
+    // anyone already at v4 with batchSizes=76 is corrected back to 38.
+    s.config = s.config || {};
+    s.config.batchSizes = [38,38,38,38,38,38,38];
+    s.current = s.current || {};
+    s.current.waitingByBatch = s.current.waitingByBatch || [0,0,0,0,0,0,0];
+    for (let i = 0; i < 7; i++) {
+      const p = (s.current.primeByDay    || [])[i] || 0;
+      const b = (s.current.backupByDay   || [])[i] || 0;
+      const f = (s.current.floorByBatch  || [])[i] || 0;
+      const dx= (s.current.dewaxedByBatch|| [])[i] || 0;
+      const room = Math.max(0, 38 - (p + b + f + dx));
+      s.current.waitingByBatch[i] = Math.min(room, s.current.waitingByBatch[i] || 0);
+      // If Waiting was 76 (old default), cap it at the available room.
+      if (!s.current.waitingByBatch[i]) s.current.waitingByBatch[i] = room;
+    }
+    s._schemaVersion = 5;
     return s;
   },
 };
@@ -1044,7 +1065,7 @@ const HANGERS_PRIME = 38;
 const HANGERS_BACKUP = 76;
 const HORIZON_H = 168;
 const HORIZON_M = HORIZON_H * 60;   // 10080 minutes = 7 days
-const BATCH_SIZE = 76;
+const BATCH_SIZE = 38;
 
 // Backup conveyor SVG layout: 19 rows × 4 columns = 76 slots, numbered left→right,
 // top→bottom: row 0 = slots 1,2,3,4; row 1 = 5,6,7,8; ... The Prime conveyor sits to
@@ -1174,7 +1195,7 @@ const DEFAULT_STATE = () => {
       unhangCycleMin: 3,
       robotUptimePct: 92,
       sequence: ['P','P','B','B','B','B','B','B'],
-      batchSizes: [76,76,76,76,76,76,76],
+      batchSizes: [38,38,38,38,38,38,38],
       // Explicit resource pool. Today's plant assumption: 2 floor operators on shift,
       // 1 sand-cleaning booth. Each operator task (Hang / Unhang) occupies one operator
       // slot; Sand occupies the booth. Multiple operators can work in parallel.
@@ -1191,10 +1212,10 @@ const DEFAULT_STATE = () => {
       nowTs: anchor.toISOString(),
       sessionStartDay:  0,   // 0=Sun..6=Sat — which weekday the forecast starts on
       sessionStartHour: 6,   // hour of day (0-23) for the morning shift start
-      // Hard rule: a batch is at most 76 shells (38 Prime + 38 Waiting — the full pipeline).
-      // Default opening: all 7 batches × 76 shells in Waiting, nothing on prime/backup/floor/dewax
+      // Hard rule: a batch is at most 38 shells (the physical Prime conveyor capacity).
+      // Default opening: all 7 batches × 38 shells in Waiting, nothing on prime/backup/floor/dewax
       // — i.e. fresh start, all batches queued before Dip 1.
-      waitingByBatch:  [76, 76, 76, 76, 76, 76, 76],
+      waitingByBatch:  [38, 38, 38, 38, 38, 38, 38],
       primeByDay:      [0,  0,  0,  0,  0,  0,  0],
       backupByDay:     [0,  0,  0,  0,  0,  0,  0],
       floorByBatch:    [0,  0, 0, 0, 0, 0,  0],
@@ -1549,7 +1570,7 @@ function stateAtHour(forecast, m) {
       if (tMin >= s.startMin && tMin < s.endMin) {
         active.push({batch: b, stage: s.stage, startMin: s.startMin, endMin: s.endMin});
         // Prime: hanging (loading) + dip1 + dip2
-        if (s.stage === 0 || s.stage === 2 || s.stage === 12) prime.push({batch:b, stage:s.stage, startMin: s.startMin, endMin: s.endMin});
+        if (s.stage === 0 || s.stage === 1 || s.stage === 2 || s.stage === 12) prime.push({batch:b, stage:s.stage, startMin: s.startMin, endMin: s.endMin});
         // Backup: dips 3..7, seal, hang-dry, unhanging
         if ((s.stage >= 3 && s.stage <= 9) || s.stage === 13) backup.push({batch:b, stage:s.stage, startMin: s.startMin, endMin: s.endMin});
         if (s.stage === 10) floor.push({batch:b, stage:s.stage, startMin: s.startMin, endMin: s.endMin});
@@ -1896,9 +1917,9 @@ function renderCurrentStateGrid() {
   // Migration / hard cap: each batch's total must not exceed its configured size.
   // If a saved state somehow exceeds it (legacy data or hand-edit), shed shells from
   // Waiting first — they haven't been physically committed anywhere yet.
-  state.config.batchSizes = state.config.batchSizes || [76,76,76,76,76,76,76];
+  state.config.batchSizes = state.config.batchSizes || [38,38,38,38,38,38,38];
   for (let i = 0; i < 7; i++) {
-    const cap = Math.max(0, Math.min(76, state.config.batchSizes[i] || 0));
+    const cap = Math.max(0, Math.min(38, state.config.batchSizes[i] || 0));
     const w = state.current.waitingByBatch[i] || 0;
     const p = state.current.primeByDay[i]     || 0;
     const b = state.current.backupByDay[i]    || 0;
@@ -1965,24 +1986,24 @@ function renderCurrentStateGrid() {
   }
   wrap.appendChild(hdr);
 
-  // PER-BATCH SIZE — a batch can be less than 76 (breakage, scrap, partial load). A full
-  // batch fills the whole pipeline: 38 Prime + 38 Waiting, or 76 Backup, etc. The cap on
+  // PER-BATCH SIZE — a batch can be less than 38 (breakage, scrap, partial load). 38 is
+  // the physical Prime-conveyor capacity; Backup holds 76 (= 2 full batches). The cap on
   // each Opening-Position cell is `min(slotPhysicalMax, size[i] - otherRowsTotal)` so you
   // can't distribute more shells than the batch actually has.
-  const HARD_MAX = 76;
+  const HARD_MAX = 38;
   const batchSizeOf = (i) => Math.max(0, Math.min(HARD_MAX, (state.config.batchSizes || [])[i] || 0));
 
   // Size row — editable; the single source of truth for how many shells this batch holds.
   const sizeRow = el('div', { class:'grid items-center gap-1 mb-1 pb-1 border-b border-black/5', style:{gridTemplateColumns: HCOLS} });
   sizeRow.appendChild(el('span', {
     class:'text-[10px] uppercase tracking-[.08em] text-navy-deep/80 font-semibold',
-    title:'Total shells in this batch (max 76 — 38 Prime + 38 Waiting at full pipeline). Reduce if you had breakage, scrap, or plan a partial load.',
+    title:'Total shells in this batch (max 38 — the physical Prime-conveyor capacity). Reduce if you had breakage, scrap, or plan a partial load.',
   }, 'Size'));
   for (let i = 0; i < 7; i++) {
     const currentSize = batchSizeOf(i);
     const inp = mkInp(currentSize, HARD_MAX, (v) => {
       const oldSize = batchSizeOf(i);
-      state.config.batchSizes = state.config.batchSizes || [76,76,76,76,76,76,76];
+      state.config.batchSizes = state.config.batchSizes || [38,38,38,38,38,38,38];
       state.config.batchSizes[i] = v;
       // Clamp slot values down so the batch's total never exceeds its new size. Shed from
       // Waiting first (uncommitted), then Floor, then DeWax, then Backup, then Prime.
@@ -2021,11 +2042,11 @@ function renderCurrentStateGrid() {
   wrap.appendChild(sizeRow);
 
   const rows = [
-    ['Waiting', 76,              state.current.waitingByBatch,  (i, v) => state.current.waitingByBatch[i] = v],
+    ['Waiting', 38,              state.current.waitingByBatch,  (i, v) => state.current.waitingByBatch[i] = v],
     ['Prime',   HANGERS_PRIME,   state.current.primeByDay,      (i, v) => state.current.primeByDay[i] = v],
     ['Backup',  HANGERS_BACKUP,  state.current.backupByDay,     (i, v) => state.current.backupByDay[i] = v],
     ['Floor',   38,              state.current.floorByBatch,    (i, v) => state.current.floorByBatch[i] = v],
-    ['DeWax',   76,              state.current.dewaxedByBatch,  (i, v) => state.current.dewaxedByBatch[i] = v],
+    ['DeWax',   38,              state.current.dewaxedByBatch,  (i, v) => state.current.dewaxedByBatch[i] = v],
   ];
   const batchTotal = (i) => rows.reduce((a, r) => a + (r[2][i] || 0), 0);
 
@@ -2213,38 +2234,50 @@ function updateForHour(forecast, m) {
     updateForHour._dippingShell = ds;
   }
 
-  /* Per-hanger coloring:
-     - Non-hanging stages (dip1/dip2): all 38 shells hang on prime → fill all
-     - Hanging stage: fill progressively based on stage progress (robot loads pair by pair)
-     - Unhanging stage on backup: fill decreases progressively */
-  const primeBatches = snap.prime;
-  const primeCap = primeOccupancy();
-  // Determine per-circle fill count based on stage progress
-  // Returns a function (i)=> batch|null for prime
-  const primePainter = () => {
-    if (primeBatches.length === 0) return null;
-    // Hanging: shells load ONE at a time. At progress p, floor(p * size) shells are hung.
-    const hb = primeBatches.find(p => p.stage === 12);
-    if (hb) {
-      const size = hb.batch.size || 0;
-      const prog = Math.max(0, Math.min(1, (h - hb.startMin) / Math.max(1, hb.endMin - hb.startMin)));
-      const loaded = Math.floor(prog * size);
-      return (i) => (i <= loaded) ? hb.batch : null;
+  /* Per-hanger coloring — a batch's shells are physically hanging on Prime for the WHOLE
+     span from Hang start to Dip 3 end, including the in-between dry-gates and Sandblast
+     (which is performed on the conveyor, not off it). snap.prime only lists batches whose
+     CURRENT stage is on Prime, so it misses the dry-gate windows entirely — we rebuild
+     the occupancy per-batch from the raw stage times. */
+  const primeRangeForBatch = (b) => {
+    const st12 = b.stages.find(s => s.stage === 12);
+    const st3  = b.stages.find(s => s.stage === 3);
+    const st0  = b.stages.find(s => s.stage === 0);
+    const st2  = b.stages.find(s => s.stage === 2);
+    // Batch arrives on Prime when Hang starts (or Dip 1 for in-flight cohorts without Hang).
+    const arriveAt = st12 ? st12.startMin : (st0 ? st0.startMin : null);
+    if (arriveAt == null) return null;
+    if (h < arriveAt) return null;
+    // Hanging in progress — shells load top-down (slot 1 first). Cap at batch size.
+    if (st12 && h < st12.endMin) {
+      const prog = (h - st12.startMin) / Math.max(1, st12.endMin - st12.startMin);
+      const count = Math.floor(prog * (b.size || 0));
+      return count > 0 ? { from: 1, to: Math.min(count, b.size) } : null;
     }
-    // Dip stages on prime: batch occupies its first `size` hangers only.
-    if (primeBatches.length >= 2) {
-      const s0 = primeBatches[0].batch.size || 0;
-      const s1 = primeBatches[1].batch.size || 0;
-      return (i) => {
-        if (i <= s0) return primeBatches[0].batch;
-        if (i > 19 && (i - 19) <= s1) return primeBatches[1].batch;
-        return null;
-      };
+    // Dip 3 in progress — shells are picked top-down; slots (picked+1)..size remain.
+    if (st3 && h >= st3.startMin) {
+      if (h >= st3.endMin) return null;  // batch fully on Backup now
+      const prog = (h - st3.startMin) / Math.max(1, st3.endMin - st3.startMin);
+      const picked = Math.floor(prog * (b.size || 0));
+      return picked < b.size ? { from: picked + 1, to: b.size } : null;
     }
-    const size = primeBatches[0].batch.size || 0;
-    return (i) => (i <= size) ? primeBatches[0].batch : null;
+    // Everywhere else between Hang end and Dip 3 start (Dip 1, dry, Sandblast, dry, Dip 2,
+    // dry) the whole batch sits on Prime.
+    const leaveAt = st3 ? st3.startMin : (st2 ? st2.endMin : null);
+    if (leaveAt == null || h < leaveAt) return { from: 1, to: b.size };
+    return null;
   };
-  const primePaint = primePainter();
+  // Build the slot→batch mapping from all batches' current Prime residence. If two batches
+  // straddle the conveyor at the same instant, the later-arriving one wins on overlap.
+  const primeFill = new Array(HANGERS_PRIME + 1).fill(null);
+  for (const b of forecast.batches) {
+    if (!b || b.role === 'done') continue;
+    const r = primeRangeForBatch(b);
+    if (!r) continue;
+    for (let i = Math.max(1, r.from); i <= Math.min(HANGERS_PRIME, r.to); i++) {
+      primeFill[i] = b;
+    }
+  }
   // Pre-compute starting-state coloring per slot (h===0 case): fill slots sequentially with each day's count.
   const primeInitial = new Array(39).fill(null); // 1-indexed
   {
@@ -2264,8 +2297,8 @@ function updateForHour(forecast, m) {
     // At h=0, the USER's per-batch current-state counts always win.
     if (h === 0 && primeInitial[i]) {
       bColor = primeInitial[i];
-    } else if (primePaint) {
-      const bb = primePaint(i);
+    } else {
+      const bb = primeFill[i];
       if (bb) bColor = bb.color;
     }
     // If this shell is currently in the robot's grip, vacate its slot:
@@ -2793,7 +2826,7 @@ function updateForHour(forecast, m) {
       });
       sizeInp.oninput = () => {
         // Editing the total size only updates the WAITING cohort (in-flight are driven by Opening Position)
-        state.config.batchSizes[d] = Math.max(0, Math.min(76, +sizeInp.value || 0));
+        state.config.batchSizes[d] = Math.max(0, Math.min(38, +sizeInp.value || 0));
         state.current.waitingByBatch[d] = state.config.batchSizes[d];
         state.current.confirmed = false;
         save(); renderAll();
