@@ -1046,6 +1046,23 @@ const HORIZON_H = 168;
 const HORIZON_M = HORIZON_H * 60;   // 10080 minutes = 7 days
 const BATCH_SIZE = 76;
 
+// Backup conveyor SVG layout: 19 rows × 4 columns = 76 slots, numbered left→right,
+// top→bottom: row 0 = slots 1,2,3,4; row 1 = 5,6,7,8; ... The Prime conveyor sits to
+// the right of Backup, so the 2 columns physically closest to Prime are the RIGHTMOST
+// ones (column indexes 2 and 3 within each row, i.e. slots r*4+3 and r*4+4).
+//
+// Operational rule (from the plant): when shells arrive on Backup via Dip 3 they are
+// hung one-by-one from TOP to BOTTOM on the 2 near-Prime columns first, and only then
+// spill into the 2 far columns. A full 76-shell batch therefore occupies the entire
+// backup (38 near + 38 far) and no second batch can start Dip 3 until the current one
+// unhangs. BACKUP_FILL_SEQ is the canonical 76-long slot order that encodes this rule.
+const BACKUP_FILL_SEQ = (() => {
+  const seq = [];
+  for (let r = 0; r < 19; r++) { seq.push(r*4 + 3); seq.push(r*4 + 4); }  // near cols 2,3
+  for (let r = 0; r < 19; r++) { seq.push(r*4 + 1); seq.push(r*4 + 2); }  // far cols 0,1
+  return seq;
+})();
+
 /* ---------------- Safe DOM helpers ---------------- */
 function el(tag, attrs, children) {
   const n = document.createElement(tag);
@@ -1452,6 +1469,24 @@ function computeForecast(cfg, anchorTsISO) {
   const scoreOf = (inst) =>
     tpRank(inst) * 1000 + prioOf(inst.batch.batchIdx) * 10 + inst.idx;
 
+  // BACKUP CAPACITY — the physical conveyor holds only ONE batch at a time (76 slots = one
+  // full batch). A batch "owns" backup from the start of its Dip 3 until the end of its
+  // Unhang. A next batch's Dip 3 therefore cannot start before the current owner finishes
+  // Unhang. We model this with a single scalar `backupFreeAt` that gates Dip 3 scheduling.
+  //
+  // When we dispatch a batch's Dip 3 at time T, we reserve backup until an estimate of its
+  // own Unhang end. Estimate uses the pre-dispatched stage times: the original gap between
+  // Dip 3 start and Unhang end shifts by the same amount as Dip 3 itself does.
+  for (const inst of instances) {
+    inst._origStart = inst.s.startMin;
+    inst._origEnd   = inst.s.endMin;
+  }
+  const stage13Of = new Map();
+  for (const inst of instances) {
+    if (inst.s.stage === 13) stage13Of.set(inst.batch, inst);
+  }
+  let backupFreeAt = 0;
+
   // Main dispatch loop. Each iteration picks the ONE instance with the earliest
   // earliestStart and fixes its startMin / endMin. Ties break on `scoreOf`.
   let guard = 0;
@@ -1467,7 +1502,8 @@ function computeForecast(cfg, anchorTsISO) {
       // (e.g. waiting batches scheduled for day N * 1440).
       const prevEnd = inst.idx > 0 ? b.stages[inst.idx - 1].endMin : inst.s.startMin;
       const batchReady = prevEnd + inst.gapBefore;
-      const earliestStart = Math.max(batchReady, resourceReadyFor(inst));
+      let earliestStart = Math.max(batchReady, resourceReadyFor(inst));
+      if (inst.s.stage === 3) earliestStart = Math.max(earliestStart, backupFreeAt);
       if (best == null
           || earliestStart < best.earliestStart
           || (earliestStart === best.earliestStart && scoreOf(inst) < scoreOf(best.inst))) {
@@ -1481,6 +1517,22 @@ function computeForecast(cfg, anchorTsISO) {
     inst.s.startMin = start;
     inst.s.endMin = end;
     claimResource(inst, end);
+    // Backup-capacity bookkeeping. Any backup-owning stage (Dip 3..7, Seal, Hang-dry,
+    // Unhang) of the current owner shifts the reservation: stages are sequential so the
+    // unhang-end will shift at least as much as the most-recently-dispatched backup stage.
+    // Starting from Dip 3's pick and tightening on every later stage converges on the
+    // actual unhang-end by the time Unhang itself is dispatched.
+    if ((inst.s.stage >= 3 && inst.s.stage <= 9) || inst.s.stage === 13) {
+      const s13 = stage13Of.get(inst.batch);
+      if (s13) {
+        const shift = end - inst._origEnd;           // how far this stage shifted
+        backupFreeAt = Math.max(backupFreeAt, s13._origEnd + shift);
+      } else {
+        // Edge case: batch has no Unhang stage (shouldn't happen for goBackup=true);
+        // hold conservatively until this stage ends plus a safety buffer.
+        backupFreeAt = Math.max(backupFreeAt, end + 10000);
+      }
+    }
     nextIdxForBatch.set(inst.batch, inst.idx + 1);
   }
 
@@ -2142,13 +2194,21 @@ function updateForHour(forecast, m) {
     const ds = { prefix: null, num: null };
     if (a1) {
       const stg = a1.stage;
-      const size = a1.batch.size || 38;
+      const size = a1.batch.size || BATCH_SIZE;
       const prog = Math.max(0, Math.min(0.999, (tMinEarly - a1.startMin) / Math.max(1, a1.endMin - a1.startMin)));
       const shellIdx = Math.floor(prog * size);
       const onPrime  = (stg === 0 || stg === 2 || stg === 12);
-      const onBackup = (stg >= 3 && stg <= 9) || stg === 13;
-      if (onPrime)       { ds.prefix = 'p'; ds.num = shellIdx + 1; }
-      else if (onBackup) { ds.prefix = 'b'; ds.num = shellIdx + 1; }
+      // Dip 3 is a transit stage: the shell just left Prime slot (shellIdx+1) and is
+      // being carried to Backup. Highlight the Prime source slot so the vacate visual
+      // appears where the shell actually came from.
+      if (stg === 3)         { ds.prefix = 'p'; ds.num = shellIdx + 1; }
+      else if (onPrime)      { ds.prefix = 'p'; ds.num = shellIdx + 1; }
+      else if ((stg >= 4 && stg <= 9) || stg === 13) {
+        // In-place backup stages (pick → dip → return to same slot) and Unhang.
+        // The slot currently in the robot's grip is the one at BACKUP_FILL_SEQ[shellIdx].
+        ds.prefix = 'b';
+        ds.num = BACKUP_FILL_SEQ[Math.max(0, Math.min(75, shellIdx))];
+      }
     }
     updateForHour._dippingShell = ds;
   }
@@ -2237,51 +2297,55 @@ function updateForHour(forecast, m) {
     c.setAttribute('opacity', '0.55');
   }
   const activeBack = snap.backup;
+  // Paint a slot with a given batch color, honoring the "shell in gripper" vacate effect.
+  const paintBackupSlot = (slot, color) => {
+    const g = document.getElementById('b' + slot);
+    if (!g) return;
+    const c = g.querySelector('circle');
+    if (_ds && _ds.prefix === 'b' && _ds.num === slot) {
+      c.setAttribute('fill', '#fff');
+      c.setAttribute('stroke', 'rgba(31,73,125,0.75)');
+      c.setAttribute('stroke-dasharray', '3 2');
+      c.setAttribute('stroke-width', '1.5');
+      c.setAttribute('opacity', '1');
+      return;
+    }
+    c.setAttribute('fill', color);
+    c.setAttribute('stroke', 'rgba(10,31,61,.35)');
+    c.setAttribute('stroke-dasharray', '');
+    c.setAttribute('stroke-width', '1');
+    c.setAttribute('opacity', '1');
+  };
   if (h === 0) {
-    // At h=0, USER's per-batch counts always win on backup.
-    let cur = 1;
+    // At h=0, USER's per-batch counts always win on backup. Fill in the canonical
+    // top-down near-cols-first order so the visual matches the physical hanging rule.
+    let cur = 0;
     for (let d = 0; d < 7; d++) {
       const n = state.current.backupByDay[d] || 0;
-      for (let k = 0; k < n && cur <= 76; k++, cur++) {
-        const g = document.getElementById('b' + cur);
-        if (!g) continue;
-        const c = g.querySelector('circle');
-        c.setAttribute('fill', BATCH_COLORS[d]);
-        c.setAttribute('stroke', 'rgba(10,31,61,.35)');
-        c.setAttribute('stroke-dasharray', '');
-        c.setAttribute('opacity', '1');
+      for (let k = 0; k < n && cur < 76; k++, cur++) {
+        paintBackupSlot(BACKUP_FILL_SEQ[cur], BATCH_COLORS[d]);
       }
     }
   } else if (activeBack.length > 0) {
     activeBack.sort((a,b)=>a.startMin - b.startMin);
     for (let bi = 0; bi < Math.min(activeBack.length, 2); bi++) {
       const bb = activeBack[bi];
-      const base = bi * 38;
       const size = bb.batch.size || BATCH_SIZE;
-      let count = size;
-      if (bb.stage === 13) {
-        const prog = Math.max(0, Math.min(1, (h - bb.startMin) / Math.max(1, bb.endMin - bb.startMin)));
-        count = Math.max(0, size - Math.floor(prog * size));
-      }
-      for (let k = 1; k <= count && (base + k) <= 76; k++) {
-        const slot = base + k;
-        const g = document.getElementById('b' + slot);
-        if (!g) continue;
-        const c = g.querySelector('circle');
-        if (_ds && _ds.prefix === 'b' && _ds.num === slot) {
-          // Shell is in the robot's grip — show a highlighted empty slot with its number
-          c.setAttribute('fill', '#fff');
-          c.setAttribute('stroke', 'rgba(31,73,125,0.75)');
-          c.setAttribute('stroke-dasharray', '3 2');
-          c.setAttribute('stroke-width', '1.5');
-          c.setAttribute('opacity', '1');
-          continue;
-        }
-        c.setAttribute('fill', bb.batch.color);
-        c.setAttribute('stroke', 'rgba(10,31,61,.35)');
-        c.setAttribute('stroke-dasharray', '');
-        c.setAttribute('stroke-width', '1');
-        c.setAttribute('opacity', '1');
+      const prog = Math.max(0, Math.min(1, (h - bb.startMin) / Math.max(1, bb.endMin - bb.startMin)));
+      // startIdx..endIdx is the slice of BACKUP_FILL_SEQ this batch occupies RIGHT NOW.
+      // Dip 3: shells arrive one-by-one → count grows 0→size through near cols then far.
+      // Unhang: shells leave first-in-first-out → the earliest-filled slots empty first.
+      // Other backup stages (4..9): entire batch is parked on its slots.
+      let startIdx = 0, endIdx = size;
+      if (bb.stage === 3)  endIdx   = Math.floor(prog * size);
+      if (bb.stage === 13) startIdx = Math.floor(prog * size);
+      // A second concurrent batch (rare at size=76 but supported) starts at the far cols.
+      const fillOffset = (bi === 0) ? 0 : 38;
+      for (let i = startIdx; i < endIdx; i++) {
+        const seqIdx = fillOffset + i;
+        if (seqIdx >= 76) break;
+        const slot = BACKUP_FILL_SEQ[seqIdx];
+        paintBackupSlot(slot, bb.batch.color);
       }
     }
   }
