@@ -6,7 +6,7 @@ Single-file HTML app. No backend, no build step. All state in `localStorage` und
 
 - **Prime dry time — maximum 6 hours** between consecutive Prime dips. The chemistry allows longer, but exceeding 6h means the coat has dried too much and the next dip won't bond correctly. This is a hard upper bound, not a target.
 - **Backup dry time — minimum 8 hours** between consecutive Backup dips. The coat must cure for at least 8h before re-dipping; going under this risks delamination. This is a hard lower bound.
-- **Batch size — maximum 38 hangers** (Prime conveyor physical capacity: 19 pairs × 2 columns).
+- **Sandblasting — 1 hour, manual, between Prime dip 1 and Prime dip 2.** After the robot completes the Prime dip 1 sweep (~261 min for a full batch), an operator manually sandblasts all shells before dip 2 can start. Duration ≈ 60 min. This is operator-only; the robot is free but the 99-minute window remaining before the dip-2 deadline is too short to run a Backup dip (261 min), making the Prime phase effectively uninterruptible.
 - **Batch size — maximum 38 hangers** (Prime conveyor physical capacity: 19 pairs × 2 columns).
 - **Single robot** — one robot on a 7th-axis rail serves both Prime and Backup. All dip operations are serial through this shared resource.
 

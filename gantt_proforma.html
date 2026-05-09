@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Production Proforma — Cabiran Shell Room Apr–May 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root { --navy:#1F497D; --cream:#FAF7F2; --border:#e0dbd2; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--cream); color:#222; font-family:'Inter',sans-serif; font-size:13px; padding:24px; }
+  h1 { font-family:'Playfair Display',serif; color:var(--navy); font-size:22px; margin-bottom:4px; }
+  .subtitle { color:#666; margin-bottom:20px; font-size:12px; }
+  
+  .summary-box { background:#fff; border:1px solid var(--border); border-radius:8px; padding:16px 20px; margin-bottom:20px; display:flex; gap:40px; flex-wrap:wrap; }
+  .kpi { text-align:center; }
+  .kpi .val { font-size:28px; font-weight:700; color:var(--navy); }
+  .kpi .lbl { font-size:11px; color:#666; margin-top:2px; }
+  
+  .constraints { background:#fff5e6; border:1px solid #e8c87a; border-radius:6px; padding:12px 16px; margin-bottom:20px; font-size:12px; line-height:1.7; }
+  .constraints strong { color:var(--navy); }
+  
+  table { width:100%; border-collapse:collapse; background:#fff; border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+  thead th { background:var(--navy); color:#fff; padding:8px 10px; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; white-space:nowrap; }
+  tr:nth-child(even) { background:#f8f6f2; }
+  tr:hover { background:#f0ede6; }
+  
+  .row-label { padding:8px 12px; min-width:110px; font-size:12px; vertical-align:middle; }
+  .dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px; vertical-align:middle; }
+  .row-label small { color:#777; font-size:10px; }
+  
+  .gantt-cell { padding:4px 8px; width:60%; }
+  .gantt-bar { position:relative; height:32px; background:#f0ede6; border-radius:3px; overflow:hidden; }
+  .seg { position:absolute; height:100%; display:flex; align-items:center; justify-content:center; border-radius:2px; overflow:hidden; }
+  .seg.prime { z-index:3; }
+  .seg.sandblast { z-index:4; background:repeating-linear-gradient(45deg,rgba(80,40,0,0.25) 0,rgba(80,40,0,0.25) 3px,transparent 3px,transparent 8px); border:1px dashed rgba(80,40,0,0.4) !important; }
+  .seg.backup { z-index:2; }
+  .seg.dry { z-index:1; border-radius:2px; }
+  .seg.dewax-marker { z-index:5; width:2px; background:var(--navy); height:100%; font-size:9px; color:var(--navy); top:0; display:flex; align-items:flex-end; padding-bottom:2px; }
+  .seg-label { font-size:9px; font-weight:700; color:rgba(10,31,61,0.75); pointer-events:none; }
+  
+  .day-line { position:absolute; top:0; bottom:0; width:1px; background:rgba(100,100,100,0.2); z-index:0; }
+  .day-label { position:absolute; top:2px; font-size:9px; color:#999; white-space:nowrap; transform:translateX(-50%); }
+  .gantt-header-row { position:relative; height:24px; margin-bottom:2px; overflow:hidden; }
+  .gantt-header-wrap { padding:0 8px; }
+  
+  .data-cell { padding:6px 10px; text-align:center; white-space:nowrap; font-size:12px; vertical-align:middle; }
+  
+  .legend { display:flex; gap:16px; margin-top:16px; flex-wrap:wrap; font-size:11px; align-items:center; }
+  .legend-item { display:flex; align-items:center; gap:5px; }
+  .legend-swatch { width:20px; height:12px; border-radius:2px; border:1px solid rgba(10,31,61,0.3); }
+  
+  .actual-comparison { background:#fff; border:1px solid var(--border); border-radius:8px; padding:16px 20px; margin-top:20px; }
+  .actual-comparison h2 { font-family:'Playfair Display',serif; color:var(--navy); font-size:16px; margin-bottom:12px; }
+  .comp-table { width:100%; border-collapse:collapse; font-size:12px; }
+  .comp-table th { background:#eee; padding:6px 10px; text-align:left; }
+  .comp-table td { padding:5px 10px; border-bottom:1px solid #f0ede6; }
+  .better { color:#2a7a2a; font-weight:600; }
+  .worse { color:#c0392b; font-weight:600; }
+</style>
+</head>
+<body>
+<h1>Production Proforma — Cabiran Shell Room</h1>
+<p class="subtitle">Optimal feasible schedule · 13 batches · Apr 23 – May 12, 2026 · Single robot · All constraints respected</p>
+
+<div class="summary-box">
+  <div class="kpi"><div class="val">13</div><div class="lbl">Batches</div></div>
+  <div class="kpi"><div class="val">476</div><div class="lbl">Total hangers</div></div>
+  <div class="kpi"><div class="val">May 2</div><div class="lbl">Last batch Prime done</div></div>
+  <div class="kpi"><div class="val">May 12</div><div class="lbl">All DeWax-ready</div></div>
+  <div class="kpi"><div class="val">19.5d</div><div class="lbl">Anchor → last DeWax</div></div>
+  <div class="kpi"><div class="val">0</div><div class="lbl">Constraint violations</div></div>
+  <div class="kpi"><div class="val">~6d</div><div class="lbl">Estimated saving vs actual</div></div>
+</div>
+
+<div class="constraints">
+  <strong>Constraints enforced:</strong>
+  Prime dry time ≤ 6h between consecutive Prime dips &nbsp;·&nbsp;
+  Sandblast 60 min (manual) after Prime dip 1, before Prime dip 2 &nbsp;·&nbsp;
+  Backup dry time ≥ 8h between consecutive Backup dips &nbsp;·&nbsp;
+  Batch size ≤ 38 hangers &nbsp;·&nbsp;
+  Single robot (all dips serial) &nbsp;·&nbsp;
+  One batch on Prime at a time (38-slot physical capacity) &nbsp;·&nbsp;
+  Hang-dry 12h + Floor-dry 12h after Backup complete
+</div>
+
+<div class="gantt-header-wrap">
+  <div class="gantt-header-row" style="margin-left:110px;position:relative;">
+    <div class="day-label" style="left:0.000%">Apr 23</div><div class="day-label" style="left:3.797%">Apr 24</div><div class="day-label" style="left:8.861%">Apr 25</div><div class="day-label" style="left:13.924%">Apr 26</div><div class="day-label" style="left:18.987%">Apr 27</div><div class="day-label" style="left:24.051%">Apr 28</div><div class="day-label" style="left:29.114%">Apr 29</div><div class="day-label" style="left:34.177%">Apr 30</div><div class="day-label" style="left:39.241%">May 01</div><div class="day-label" style="left:44.304%">May 02</div><div class="day-label" style="left:49.367%">May 03</div><div class="day-label" style="left:54.430%">May 04</div><div class="day-label" style="left:59.494%">May 05</div><div class="day-label" style="left:64.557%">May 06</div><div class="day-label" style="left:69.620%">May 07</div><div class="day-label" style="left:74.684%">May 08</div><div class="day-label" style="left:79.747%">May 09</div><div class="day-label" style="left:84.810%">May 10</div><div class="day-label" style="left:89.873%">May 11</div><div class="day-label" style="left:94.937%">May 12</div><div class="day-label" style="left:100.000%">May 13</div>
+  </div>
+</div>
+
+<table>
+<thead>
+  <tr>
+    <th>Batch</th>
+    <th style="width:60%">
+      Schedule (Apr 23 – May 13)
+      <div style="position:relative;height:18px;"><div class="day-label" style="left:0.000%">Apr 23</div><div class="day-label" style="left:3.797%">Apr 24</div><div class="day-label" style="left:8.861%">Apr 25</div><div class="day-label" style="left:13.924%">Apr 26</div><div class="day-label" style="left:18.987%">Apr 27</div><div class="day-label" style="left:24.051%">Apr 28</div><div class="day-label" style="left:29.114%">Apr 29</div><div class="day-label" style="left:34.177%">Apr 30</div><div class="day-label" style="left:39.241%">May 01</div><div class="day-label" style="left:44.304%">May 02</div><div class="day-label" style="left:49.367%">May 03</div><div class="day-label" style="left:54.430%">May 04</div><div class="day-label" style="left:59.494%">May 05</div><div class="day-label" style="left:64.557%">May 06</div><div class="day-label" style="left:69.620%">May 07</div><div class="day-label" style="left:74.684%">May 08</div><div class="day-label" style="left:79.747%">May 09</div><div class="day-label" style="left:84.810%">May 10</div><div class="day-label" style="left:89.873%">May 11</div><div class="day-label" style="left:94.937%">May 12</div><div class="day-label" style="left:100.000%">May 13</div></div>
+    </th>
+    <th>PD1 Start</th>
+    <th>Prime End</th>
+    <th>Prime Dur</th>
+    <th>BD1 Start</th>
+    <th>DeWax-Ready</th>
+    <th>Day #</th>
+  </tr>
+</thead>
+<tbody>
+
+    <tr>
+      <td class="row-label" style="border-left:4px solid #EFD9A3">
+        <span class="dot" style="background:#EFD9A3"></span>
+        B1<br><small>Apr 23</small><br><small>28 hangers</small>
+      </td>
+      <td class="gantt-cell">
+        <div class="gantt-bar"><div class="seg prime" style="left:0.000%;width:2.289%;background:#EFD9A3;border:1px solid rgba(10,31,61,0.4);" 
+            title="Prime phase: Apr 23 06:00 → Apr 23 16:51 (10.8h)">
+            <span class="seg-label">P</span></div><div class="seg sandblast" style="left:0.693%;width:0.211%;" 
+                title="Sandblast: Apr 23 09:17 → Apr 23 10:17 (60 min, manual)"></div><div class="seg backup" style="left:3.207%;width:0.693%;background:#EFD9A3;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 1: Apr 23 21:12 → Apr 24 00:29 (3.3h)">
+                <span class="seg-label" style="font-size:9px">B1</span></div><div class="seg backup" style="left:6.653%;width:0.693%;background:#EFD9A3;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 2: Apr 24 13:32 → Apr 24 16:49 (3.3h)">
+                <span class="seg-label" style="font-size:9px">B2</span></div><div class="seg backup" style="left:13.695%;width:0.693%;background:#EFD9A3;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 3: Apr 25 22:55 → Apr 26 02:12 (3.3h)">
+                <span class="seg-label" style="font-size:9px">B3</span></div><div class="seg backup" style="left:28.179%;width:0.693%;background:#EFD9A3;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 4: Apr 28 19:34 → Apr 28 22:51 (3.3h)">
+                <span class="seg-label" style="font-size:9px">B4</span></div><div class="seg backup" style="left:48.094%;width:0.693%;background:#EFD9A3;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 5: May 02 17:58 → May 02 21:15 (3.3h)">
+                <span class="seg-label" style="font-size:9px">B5</span></div><div class="seg dry" style="left:48.787%;width:5.063%;background:#EFD9A3;opacity:0.25;"
+            title="Hang+Floor dry: May 02 21:15 → May 03 21:15 (24h)"></div><div class="seg dewax-marker" style="left:53.850%;"
+            title="DeWax-ready: May 03 21:15">▲</div></div>
+      </td>
+      <td class="data-cell">Apr 23 06:00</td>
+      <td class="data-cell">Apr 23 16:51</td>
+      <td class="data-cell">10.8h</td>
+      <td class="data-cell">Apr 23 21:12</td>
+      <td class="data-cell">May 03 21:15</td>
+      <td class="data-cell" style="font-weight:600">10.6d</td>
+    </tr>
+    <tr>
+      <td class="row-label" style="border-left:4px solid #E8A9A0">
+        <span class="dot" style="background:#E8A9A0"></span>
+        B2<br><small>Apr 24</small><br><small>37 hangers</small>
+      </td>
+      <td class="gantt-cell">
+        <div class="gantt-bar"><div class="seg prime" style="left:2.289%;width:3.446%;background:#E8A9A0;border:1px solid rgba(10,31,61,0.4);" 
+            title="Prime phase: Apr 23 16:51 → Apr 24 09:11 (16.3h)">
+            <span class="seg-label">P</span></div><div class="seg sandblast" style="left:3.207%;width:0.211%;" 
+                title="Sandblast: Apr 23 21:12 → Apr 23 22:12 (60 min, manual)"></div><div class="seg backup" style="left:10.074%;width:0.918%;background:#E8A9A0;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 1: Apr 25 05:45 → Apr 25 10:06 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B1</span></div><div class="seg backup" style="left:20.837%;width:0.918%;background:#E8A9A0;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 2: Apr 27 08:46 → Apr 27 13:07 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B2</span></div><div class="seg backup" style="left:42.588%;width:0.918%;background:#E8A9A0;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 3: May 01 15:52 → May 01 20:13 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B3</span></div><div class="seg backup" style="left:55.186%;width:0.918%;background:#E8A9A0;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 4: May 04 03:35 → May 04 07:56 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B4</span></div><div class="seg backup" style="left:66.174%;width:0.918%;background:#E8A9A0;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 5: May 06 07:40 → May 06 12:01 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B5</span></div><div class="seg dry" style="left:67.092%;width:5.063%;background:#E8A9A0;opacity:0.25;"
+            title="Hang+Floor dry: May 06 12:01 → May 07 12:01 (24h)"></div><div class="seg dewax-marker" style="left:72.155%;"
+            title="DeWax-ready: May 07 12:01">▲</div></div>
+      </td>
+      <td class="data-cell">Apr 23 16:51</td>
+      <td class="data-cell">Apr 24 09:11</td>
+      <td class="data-cell">16.3h</td>
+      <td class="data-cell">Apr 25 05:45</td>
+      <td class="data-cell">May 07 12:01</td>
+      <td class="data-cell" style="font-weight:600">14.3d</td>
+    </tr>
+    <tr>
+      <td class="row-label" style="border-left:4px solid #9FC9C3">
+        <span class="dot" style="background:#9FC9C3"></span>
+        B3<br><small>Apr 25</small><br><small>37 hangers</small>
+      </td>
+      <td class="gantt-cell">
+        <div class="gantt-bar"><div class="seg prime" style="left:5.735%;width:3.446%;background:#9FC9C3;border:1px solid rgba(10,31,61,0.4);" 
+            title="Prime phase: Apr 24 09:11 → Apr 25 01:31 (16.3h)">
+            <span class="seg-label">P</span></div><div class="seg sandblast" style="left:6.653%;width:0.211%;" 
+                title="Sandblast: Apr 24 13:32 → Apr 24 14:32 (60 min, manual)"></div><div class="seg backup" style="left:17.141%;width:0.918%;background:#9FC9C3;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 1: Apr 26 15:15 → Apr 26 19:36 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B1</span></div><div class="seg backup" style="left:35.246%;width:0.918%;background:#9FC9C3;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 2: Apr 30 05:04 → Apr 30 09:25 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B2</span></div><div class="seg backup" style="left:51.515%;width:0.918%;background:#9FC9C3;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 3: May 03 10:11 → May 03 14:32 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B3</span></div><div class="seg backup" style="left:62.504%;width:0.918%;background:#9FC9C3;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 4: May 05 14:16 → May 05 18:37 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B4</span></div><div class="seg backup" style="left:73.492%;width:0.918%;background:#9FC9C3;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 5: May 07 18:21 → May 07 22:42 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B5</span></div><div class="seg dry" style="left:74.409%;width:5.063%;background:#9FC9C3;opacity:0.25;"
+            title="Hang+Floor dry: May 07 22:42 → May 08 22:42 (24h)"></div><div class="seg dewax-marker" style="left:79.473%;"
+            title="DeWax-ready: May 08 22:42">▲</div></div>
+      </td>
+      <td class="data-cell">Apr 24 09:11</td>
+      <td class="data-cell">Apr 25 01:31</td>
+      <td class="data-cell">16.3h</td>
+      <td class="data-cell">Apr 26 15:15</td>
+      <td class="data-cell">May 08 22:42</td>
+      <td class="data-cell" style="font-weight:600">15.7d</td>
+    </tr>
+    <tr>
+      <td class="row-label" style="border-left:4px solid #C8B6D9">
+        <span class="dot" style="background:#C8B6D9"></span>
+        B4<br><small>Apr 27</small><br><small>36 hangers</small>
+      </td>
+      <td class="gantt-cell">
+        <div class="gantt-bar"><div class="seg prime" style="left:9.181%;width:3.597%;background:#C8B6D9;border:1px solid rgba(10,31,61,0.4);" 
+            title="Prime phase: Apr 25 01:31 → Apr 25 18:34 (17.1h)">
+            <span class="seg-label">P</span></div><div class="seg sandblast" style="left:10.074%;width:0.211%;" 
+                title="Sandblast: Apr 25 05:45 → Apr 25 06:45 (60 min, manual)"></div><div class="seg backup" style="left:24.557%;width:0.893%;background:#C8B6D9;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 1: Apr 28 02:24 → Apr 28 06:38 (4.2h)">
+                <span class="seg-label" style="font-size:9px">B1</span></div><div class="seg backup" style="left:46.283%;width:0.893%;background:#C8B6D9;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 2: May 02 09:23 → May 02 13:37 (4.2h)">
+                <span class="seg-label" style="font-size:9px">B2</span></div><div class="seg backup" style="left:57.964%;width:0.893%;background:#C8B6D9;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 3: May 04 16:45 → May 04 20:59 (4.2h)">
+                <span class="seg-label" style="font-size:9px">B3</span></div><div class="seg backup" style="left:68.952%;width:0.893%;background:#C8B6D9;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 4: May 06 20:50 → May 07 01:04 (4.2h)">
+                <span class="seg-label" style="font-size:9px">B4</span></div><div class="seg backup" style="left:79.023%;width:0.893%;background:#C8B6D9;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 5: May 08 20:34 → May 09 00:48 (4.2h)">
+                <span class="seg-label" style="font-size:9px">B5</span></div><div class="seg dry" style="left:79.916%;width:5.063%;background:#C8B6D9;opacity:0.25;"
+            title="Hang+Floor dry: May 09 00:48 → May 10 00:48 (24h)"></div><div class="seg dewax-marker" style="left:84.979%;"
+            title="DeWax-ready: May 10 00:48">▲</div></div>
+      </td>
+      <td class="data-cell">Apr 25 01:31</td>
+      <td class="data-cell">Apr 25 18:34</td>
+      <td class="data-cell">17.1h</td>
+      <td class="data-cell">Apr 28 02:24</td>
+      <td class="data-cell">May 10 00:48</td>
+      <td class="data-cell" style="font-weight:600">16.8d</td>
+    </tr>
+    <tr>
+      <td class="row-label" style="border-left:4px solid #B2C9A8">
+        <span class="dot" style="background:#B2C9A8"></span>
+        B5<br><small>Apr 28</small><br><small>37 hangers</small>
+      </td>
+      <td class="gantt-cell">
+        <div class="gantt-bar"><div class="seg prime" style="left:12.778%;width:3.446%;background:#B2C9A8;border:1px solid rgba(10,31,61,0.4);" 
+            title="Prime phase: Apr 25 18:34 → Apr 26 10:54 (16.3h)">
+            <span class="seg-label">P</span></div><div class="seg sandblast" style="left:13.695%;width:0.211%;" 
+                title="Sandblast: Apr 25 22:55 → Apr 25 23:55 (60 min, manual)"></div><div class="seg backup" style="left:31.575%;width:0.918%;background:#B2C9A8;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 1: Apr 29 11:40 → Apr 29 16:01 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B1</span></div><div class="seg backup" style="left:49.680%;width:0.918%;background:#B2C9A8;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 2: May 03 01:29 → May 03 05:50 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B2</span></div><div class="seg backup" style="left:60.668%;width:0.918%;background:#B2C9A8;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 3: May 05 05:34 → May 05 09:55 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B3</span></div><div class="seg backup" style="left:71.656%;width:0.918%;background:#B2C9A8;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 4: May 07 09:39 → May 07 14:00 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B4</span></div><div class="seg backup" style="left:81.726%;width:0.918%;background:#B2C9A8;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 5: May 09 09:23 → May 09 13:44 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B5</span></div><div class="seg dry" style="left:82.644%;width:5.063%;background:#B2C9A8;opacity:0.25;"
+            title="Hang+Floor dry: May 09 13:44 → May 10 13:44 (24h)"></div><div class="seg dewax-marker" style="left:87.707%;"
+            title="DeWax-ready: May 10 13:44">▲</div></div>
+      </td>
+      <td class="data-cell">Apr 25 18:34</td>
+      <td class="data-cell">Apr 26 10:54</td>
+      <td class="data-cell">16.3h</td>
+      <td class="data-cell">Apr 29 11:40</td>
+      <td class="data-cell">May 10 13:44</td>
+      <td class="data-cell" style="font-weight:600">17.3d</td>
+    </tr>
+    <tr>
+      <td class="row-label" style="border-left:4px solid #E6C494">
+        <span class="dot" style="background:#E6C494"></span>
+        B6<br><small>Apr 29</small><br><small>37 hangers</small>
+      </td>
+      <td class="gantt-cell">
+        <div class="gantt-bar"><div class="seg prime" style="left:16.224%;width:3.671%;background:#E6C494;border:1px solid rgba(10,31,61,0.4);" 
+            title="Prime phase: Apr 26 10:54 → Apr 27 04:18 (17.4h)">
+            <span class="seg-label">P</span></div><div class="seg sandblast" style="left:17.141%;width:0.211%;" 
+                title="Sandblast: Apr 26 15:15 → Apr 26 16:15 (60 min, manual)"></div><div class="seg backup" style="left:38.917%;width:0.918%;background:#E6C494;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 1: Apr 30 22:28 → May 01 02:49 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B1</span></div><div class="seg backup" style="left:53.351%;width:0.918%;background:#E6C494;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 2: May 03 18:53 → May 03 23:14 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B2</span></div><div class="seg backup" style="left:64.339%;width:0.918%;background:#E6C494;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 3: May 05 22:58 → May 06 03:19 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B3</span></div><div class="seg backup" style="left:75.327%;width:0.918%;background:#E6C494;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 4: May 08 03:03 → May 08 07:24 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B4</span></div><div class="seg backup" style="left:84.480%;width:0.918%;background:#E6C494;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 5: May 09 22:26 → May 10 02:47 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B5</span></div><div class="seg dry" style="left:85.397%;width:5.063%;background:#E6C494;opacity:0.25;"
+            title="Hang+Floor dry: May 10 02:47 → May 11 02:47 (24h)"></div><div class="seg dewax-marker" style="left:90.461%;"
+            title="DeWax-ready: May 11 02:47">▲</div></div>
+      </td>
+      <td class="data-cell">Apr 26 10:54</td>
+      <td class="data-cell">Apr 27 04:18</td>
+      <td class="data-cell">17.4h</td>
+      <td class="data-cell">Apr 30 22:28</td>
+      <td class="data-cell">May 11 02:47</td>
+      <td class="data-cell" style="font-weight:600">17.9d</td>
+    </tr>
+    <tr>
+      <td class="row-label" style="border-left:4px solid #D9A8B2">
+        <span class="dot" style="background:#D9A8B2"></span>
+        B7<br><small>Apr 30</small><br><small>38 hangers</small>
+      </td>
+      <td class="gantt-cell">
+        <div class="gantt-bar"><div class="seg prime" style="left:19.895%;width:3.745%;background:#D9A8B2;border:1px solid rgba(10,31,61,0.4);" 
+            title="Prime phase: Apr 27 04:18 → Apr 27 22:03 (17.8h)">
+            <span class="seg-label">P</span></div><div class="seg sandblast" style="left:20.837%;width:0.211%;" 
+                title="Sandblast: Apr 27 08:46 → Apr 27 09:46 (60 min, manual)"></div><div class="seg backup" style="left:45.341%;width:0.942%;background:#D9A8B2;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 1: May 02 04:55 → May 02 09:23 (4.5h)">
+                <span class="seg-label" style="font-size:9px">B1</span></div><div class="seg backup" style="left:57.022%;width:0.942%;background:#D9A8B2;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 2: May 04 12:17 → May 04 16:45 (4.5h)">
+                <span class="seg-label" style="font-size:9px">B2</span></div><div class="seg backup" style="left:68.010%;width:0.942%;background:#D9A8B2;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 3: May 06 16:22 → May 06 20:50 (4.5h)">
+                <span class="seg-label" style="font-size:9px">B3</span></div><div class="seg backup" style="left:78.080%;width:0.942%;background:#D9A8B2;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 4: May 08 16:06 → May 08 20:34 (4.5h)">
+                <span class="seg-label" style="font-size:9px">B4</span></div><div class="seg backup" style="left:87.233%;width:0.942%;background:#D9A8B2;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 5: May 10 11:29 → May 10 15:57 (4.5h)">
+                <span class="seg-label" style="font-size:9px">B5</span></div><div class="seg dry" style="left:88.175%;width:5.063%;background:#D9A8B2;opacity:0.25;"
+            title="Hang+Floor dry: May 10 15:57 → May 11 15:57 (24h)"></div><div class="seg dewax-marker" style="left:93.238%;"
+            title="DeWax-ready: May 11 15:57">▲</div></div>
+      </td>
+      <td class="data-cell">Apr 27 04:18</td>
+      <td class="data-cell">Apr 27 22:03</td>
+      <td class="data-cell">17.8h</td>
+      <td class="data-cell">May 02 04:55</td>
+      <td class="data-cell">May 11 15:57</td>
+      <td class="data-cell" style="font-weight:600">18.4d</td>
+    </tr>
+    <tr>
+      <td class="row-label" style="border-left:4px solid #EFD9A3">
+        <span class="dot" style="background:#EFD9A3"></span>
+        B8<br><small>May 1</small><br><small>37 hangers</small>
+      </td>
+      <td class="gantt-cell">
+        <div class="gantt-bar"><div class="seg prime" style="left:23.639%;width:3.646%;background:#EFD9A3;border:1px solid rgba(10,31,61,0.4);" 
+            title="Prime phase: Apr 27 22:03 → Apr 28 15:20 (17.3h)">
+            <span class="seg-label">P</span></div><div class="seg sandblast" style="left:24.557%;width:0.211%;" 
+                title="Sandblast: Apr 28 02:24 → Apr 28 03:24 (60 min, manual)"></div><div class="seg backup" style="left:47.177%;width:0.918%;background:#EFD9A3;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 1: May 02 13:37 → May 02 17:58 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B1</span></div><div class="seg backup" style="left:58.857%;width:0.918%;background:#EFD9A3;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 2: May 04 20:59 → May 05 01:20 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B2</span></div><div class="seg backup" style="left:69.845%;width:0.918%;background:#EFD9A3;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 3: May 07 01:04 → May 07 05:25 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B3</span></div><div class="seg backup" style="left:79.916%;width:0.918%;background:#EFD9A3;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 4: May 09 00:48 → May 09 05:09 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B4</span></div><div class="seg backup" style="left:88.175%;width:0.918%;background:#EFD9A3;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 5: May 10 15:57 → May 10 20:18 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B5</span></div><div class="seg dry" style="left:89.093%;width:5.063%;background:#EFD9A3;opacity:0.25;"
+            title="Hang+Floor dry: May 10 20:18 → May 11 20:18 (24h)"></div><div class="seg dewax-marker" style="left:94.156%;"
+            title="DeWax-ready: May 11 20:18">▲</div></div>
+      </td>
+      <td class="data-cell">Apr 27 22:03</td>
+      <td class="data-cell">Apr 28 15:20</td>
+      <td class="data-cell">17.3h</td>
+      <td class="data-cell">May 02 13:37</td>
+      <td class="data-cell">May 11 20:18</td>
+      <td class="data-cell" style="font-weight:600">18.6d</td>
+    </tr>
+    <tr>
+      <td class="row-label" style="border-left:4px solid #E8A9A0">
+        <span class="dot" style="background:#E8A9A0"></span>
+        B9<br><small>May 3</small><br><small>36 hangers</small>
+      </td>
+      <td class="gantt-cell">
+        <div class="gantt-bar"><div class="seg prime" style="left:27.286%;width:3.372%;background:#E8A9A0;border:1px solid rgba(10,31,61,0.4);" 
+            title="Prime phase: Apr 28 15:20 → Apr 29 07:19 (16.0h)">
+            <span class="seg-label">P</span></div><div class="seg sandblast" style="left:28.179%;width:0.211%;" 
+                title="Sandblast: Apr 28 19:34 → Apr 28 20:34 (60 min, manual)"></div><div class="seg backup" style="left:48.787%;width:0.893%;background:#E8A9A0;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 1: May 02 21:15 → May 03 01:29 (4.2h)">
+                <span class="seg-label" style="font-size:9px">B1</span></div><div class="seg backup" style="left:59.775%;width:0.893%;background:#E8A9A0;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 2: May 05 01:20 → May 05 05:34 (4.2h)">
+                <span class="seg-label" style="font-size:9px">B2</span></div><div class="seg backup" style="left:70.763%;width:0.893%;background:#E8A9A0;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 3: May 07 05:25 → May 07 09:39 (4.2h)">
+                <span class="seg-label" style="font-size:9px">B3</span></div><div class="seg backup" style="left:80.833%;width:0.893%;background:#E8A9A0;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 4: May 09 05:09 → May 09 09:23 (4.2h)">
+                <span class="seg-label" style="font-size:9px">B4</span></div><div class="seg backup" style="left:89.093%;width:0.893%;background:#E8A9A0;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 5: May 10 20:18 → May 11 00:32 (4.2h)">
+                <span class="seg-label" style="font-size:9px">B5</span></div><div class="seg dry" style="left:89.986%;width:5.063%;background:#E8A9A0;opacity:0.25;"
+            title="Hang+Floor dry: May 11 00:32 → May 12 00:32 (24h)"></div><div class="seg dewax-marker" style="left:95.049%;"
+            title="DeWax-ready: May 12 00:32">▲</div></div>
+      </td>
+      <td class="data-cell">Apr 28 15:20</td>
+      <td class="data-cell">Apr 29 07:19</td>
+      <td class="data-cell">16.0h</td>
+      <td class="data-cell">May 02 21:15</td>
+      <td class="data-cell">May 12 00:32</td>
+      <td class="data-cell" style="font-weight:600">18.8d</td>
+    </tr>
+    <tr>
+      <td class="row-label" style="border-left:4px solid #9FC9C3">
+        <span class="dot" style="background:#9FC9C3"></span>
+        B10<br><small>May 4</small><br><small>37 hangers</small>
+      </td>
+      <td class="gantt-cell">
+        <div class="gantt-bar"><div class="seg prime" style="left:30.658%;width:3.671%;background:#9FC9C3;border:1px solid rgba(10,31,61,0.4);" 
+            title="Prime phase: Apr 29 07:19 → Apr 30 00:43 (17.4h)">
+            <span class="seg-label">P</span></div><div class="seg sandblast" style="left:31.575%;width:0.211%;" 
+                title="Sandblast: Apr 29 11:40 → Apr 29 12:40 (60 min, manual)"></div><div class="seg backup" style="left:50.598%;width:0.918%;background:#9FC9C3;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 1: May 03 05:50 → May 03 10:11 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B1</span></div><div class="seg backup" style="left:61.586%;width:0.918%;background:#9FC9C3;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 2: May 05 09:55 → May 05 14:16 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B2</span></div><div class="seg backup" style="left:72.574%;width:0.918%;background:#9FC9C3;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 3: May 07 14:00 → May 07 18:21 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B3</span></div><div class="seg backup" style="left:82.644%;width:0.918%;background:#9FC9C3;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 4: May 09 13:44 → May 09 18:05 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B4</span></div><div class="seg backup" style="left:89.986%;width:0.918%;background:#9FC9C3;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 5: May 11 00:32 → May 11 04:53 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B5</span></div><div class="seg dry" style="left:90.904%;width:5.063%;background:#9FC9C3;opacity:0.25;"
+            title="Hang+Floor dry: May 11 04:53 → May 12 04:53 (24h)"></div><div class="seg dewax-marker" style="left:95.967%;"
+            title="DeWax-ready: May 12 04:53">▲</div></div>
+      </td>
+      <td class="data-cell">Apr 29 07:19</td>
+      <td class="data-cell">Apr 30 00:43</td>
+      <td class="data-cell">17.4h</td>
+      <td class="data-cell">May 03 05:50</td>
+      <td class="data-cell">May 12 04:53</td>
+      <td class="data-cell" style="font-weight:600">19.0d</td>
+    </tr>
+    <tr>
+      <td class="row-label" style="border-left:4px solid #C8B6D9">
+        <span class="dot" style="background:#C8B6D9"></span>
+        B11<br><small>May 5</small><br><small>37 hangers</small>
+      </td>
+      <td class="gantt-cell">
+        <div class="gantt-bar"><div class="seg prime" style="left:34.328%;width:3.671%;background:#C8B6D9;border:1px solid rgba(10,31,61,0.4);" 
+            title="Prime phase: Apr 30 00:43 → Apr 30 18:07 (17.4h)">
+            <span class="seg-label">P</span></div><div class="seg sandblast" style="left:35.246%;width:0.211%;" 
+                title="Sandblast: Apr 30 05:04 → Apr 30 06:04 (60 min, manual)"></div><div class="seg backup" style="left:52.433%;width:0.918%;background:#C8B6D9;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 1: May 03 14:32 → May 03 18:53 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B1</span></div><div class="seg backup" style="left:63.421%;width:0.918%;background:#C8B6D9;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 2: May 05 18:37 → May 05 22:58 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B2</span></div><div class="seg backup" style="left:74.409%;width:0.918%;background:#C8B6D9;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 3: May 07 22:42 → May 08 03:03 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B3</span></div><div class="seg backup" style="left:83.562%;width:0.918%;background:#C8B6D9;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 4: May 09 18:05 → May 09 22:26 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B4</span></div><div class="seg backup" style="left:90.904%;width:0.918%;background:#C8B6D9;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 5: May 11 04:53 → May 11 09:14 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B5</span></div><div class="seg dry" style="left:91.821%;width:5.063%;background:#C8B6D9;opacity:0.25;"
+            title="Hang+Floor dry: May 11 09:14 → May 12 09:14 (24h)"></div><div class="seg dewax-marker" style="left:96.885%;"
+            title="DeWax-ready: May 12 09:14">▲</div></div>
+      </td>
+      <td class="data-cell">Apr 30 00:43</td>
+      <td class="data-cell">Apr 30 18:07</td>
+      <td class="data-cell">17.4h</td>
+      <td class="data-cell">May 03 14:32</td>
+      <td class="data-cell">May 12 09:14</td>
+      <td class="data-cell" style="font-weight:600">19.1d</td>
+    </tr>
+    <tr>
+      <td class="row-label" style="border-left:4px solid #B2C9A8">
+        <span class="dot" style="background:#B2C9A8"></span>
+        B12<br><small>May 6</small><br><small>37 hangers</small>
+      </td>
+      <td class="gantt-cell">
+        <div class="gantt-bar"><div class="seg prime" style="left:37.999%;width:3.671%;background:#B2C9A8;border:1px solid rgba(10,31,61,0.4);" 
+            title="Prime phase: Apr 30 18:07 → May 01 11:31 (17.4h)">
+            <span class="seg-label">P</span></div><div class="seg sandblast" style="left:38.917%;width:0.211%;" 
+                title="Sandblast: Apr 30 22:28 → Apr 30 23:28 (60 min, manual)"></div><div class="seg backup" style="left:54.269%;width:0.918%;background:#B2C9A8;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 1: May 03 23:14 → May 04 03:35 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B1</span></div><div class="seg backup" style="left:65.257%;width:0.918%;background:#B2C9A8;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 2: May 06 03:19 → May 06 07:40 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B2</span></div><div class="seg backup" style="left:76.245%;width:0.918%;background:#B2C9A8;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 3: May 08 07:24 → May 08 11:45 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B3</span></div><div class="seg backup" style="left:85.397%;width:0.918%;background:#B2C9A8;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 4: May 10 02:47 → May 10 07:08 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B4</span></div><div class="seg backup" style="left:91.821%;width:0.918%;background:#B2C9A8;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 5: May 11 09:14 → May 11 13:35 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B5</span></div><div class="seg dry" style="left:92.739%;width:5.063%;background:#B2C9A8;opacity:0.25;"
+            title="Hang+Floor dry: May 11 13:35 → May 12 13:35 (24h)"></div><div class="seg dewax-marker" style="left:97.802%;"
+            title="DeWax-ready: May 12 13:35">▲</div></div>
+      </td>
+      <td class="data-cell">Apr 30 18:07</td>
+      <td class="data-cell">May 01 11:31</td>
+      <td class="data-cell">17.4h</td>
+      <td class="data-cell">May 03 23:14</td>
+      <td class="data-cell">May 12 13:35</td>
+      <td class="data-cell" style="font-weight:600">19.3d</td>
+    </tr>
+    <tr>
+      <td class="row-label" style="border-left:4px solid #E6C494">
+        <span class="dot" style="background:#E6C494"></span>
+        B13<br><small>May 7</small><br><small>37 hangers</small>
+      </td>
+      <td class="gantt-cell">
+        <div class="gantt-bar"><div class="seg prime" style="left:41.670%;width:3.671%;background:#E6C494;border:1px solid rgba(10,31,61,0.4);" 
+            title="Prime phase: May 01 11:31 → May 02 04:55 (17.4h)">
+            <span class="seg-label">P</span></div><div class="seg sandblast" style="left:42.588%;width:0.211%;" 
+                title="Sandblast: May 01 15:52 → May 01 16:52 (60 min, manual)"></div><div class="seg backup" style="left:56.104%;width:0.918%;background:#E6C494;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 1: May 04 07:56 → May 04 12:17 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B1</span></div><div class="seg backup" style="left:67.092%;width:0.918%;background:#E6C494;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 2: May 06 12:01 → May 06 16:22 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B2</span></div><div class="seg backup" style="left:77.162%;width:0.918%;background:#E6C494;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 3: May 08 11:45 → May 08 16:06 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B3</span></div><div class="seg backup" style="left:86.315%;width:0.918%;background:#E6C494;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 4: May 10 07:08 → May 10 11:29 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B4</span></div><div class="seg backup" style="left:92.739%;width:0.918%;background:#E6C494;opacity:0.65;border:1px solid rgba(10,31,61,0.35);"
+                title="Backup dip 5: May 11 13:35 → May 11 17:56 (4.3h)">
+                <span class="seg-label" style="font-size:9px">B5</span></div><div class="seg dry" style="left:93.657%;width:5.063%;background:#E6C494;opacity:0.25;"
+            title="Hang+Floor dry: May 11 17:56 → May 12 17:56 (24h)"></div><div class="seg dewax-marker" style="left:98.720%;"
+            title="DeWax-ready: May 12 17:56">▲</div></div>
+      </td>
+      <td class="data-cell">May 01 11:31</td>
+      <td class="data-cell">May 02 04:55</td>
+      <td class="data-cell">17.4h</td>
+      <td class="data-cell">May 04 07:56</td>
+      <td class="data-cell">May 12 17:56</td>
+      <td class="data-cell" style="font-weight:600">19.5d</td>
+    </tr>
+</tbody>
+</table>
+
+<div class="legend">
+  <strong>Legend:</strong>
+  <span class="legend-item"><span class="legend-swatch" style="background:#E8A9A0;opacity:1"></span> Prime phase (3 dips, full opacity)</span>
+  <span class="legend-item"><span class="legend-swatch" style="background:repeating-linear-gradient(45deg,rgba(80,40,0,0.25) 0,rgba(80,40,0,0.25) 3px,transparent 3px,transparent 8px);border:1px dashed rgba(80,40,0,0.4)"></span> Sandblast (60 min, manual)</span>
+  <span class="legend-item"><span class="legend-swatch" style="background:#E8A9A0;opacity:0.65"></span> Backup dips (×5, 65% opacity)</span>
+  <span class="legend-item"><span class="legend-swatch" style="background:#E8A9A0;opacity:0.25"></span> Hang+Floor dry (24h)</span>
+  <span class="legend-item"><span style="color:#1F497D;font-weight:700">▲</span> DeWax-ready</span>
+</div>
+
+<div class="actual-comparison">
+  <h2>Actual vs Optimal Comparison</h2>
+  <table class="comp-table">
+    <thead><tr><th>Metric</th><th>Actual (Apr 23 – May 8)</th><th>Optimal Proforma</th><th>Δ</th></tr></thead>
+    <tbody>
+      <tr><td>Last batch (B13) PD1 start</td><td class="worse">~May 7</td><td class="better">May 1</td><td class="better">−6 days earlier</td></tr>
+      <tr><td>Avg inter-batch Prime gap</td><td class="worse">~30.4h</td><td class="better">~17h</td><td class="better">−13.4h per batch</td></tr>
+      <tr><td>All 13 batches DeWax-ready</td><td class="worse">~May 22–25 (est.)</td><td class="better">May 12</td><td class="better">−10 to −13 days</td></tr>
+      <tr><td>Prime dry constraint violations</td><td class="worse">68% of transitions</td><td class="better">0%</td><td class="better">Fully compliant</td></tr>
+      <tr><td>Backup dry constraint violations</td><td class="worse">48% of transitions</td><td class="better">0%</td><td class="better">Fully compliant</td></tr>
+      <tr><td>Robot idle during Backup dry wait</td><td class="worse">Not utilized</td><td class="better">Used for next batch Prime dips</td><td class="better">Key throughput lever</td></tr>
+    </tbody>
+  </table>
+  <p style="margin-top:12px;font-size:11px;color:#666;">
+    <strong>Main scheduling change:</strong> In the optimal plan, the robot switches to the next batch's Prime dips 
+    during each 8-hour Backup dry-wait window. This reduces total cycle time from ~16 active days to ~9 days 
+    for all batches to complete Prime, while the last DeWax-ready date advances by ~10–13 days.
+    The single constraint on inter-batch throughput is the <strong>single robot</strong> — no change to headcount 
+    or equipment is needed.
+  </p>
+</div>
+</body>
+</html>
