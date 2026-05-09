@@ -4,7 +4,8 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=1280, initial-scale=1" />
 <title>Cabiran — Shell Drying Production Planner</title>
-<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.tailwindcss.com">
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
@@ -137,6 +138,7 @@ tailwind.config = {
       <button data-tab="4" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium text-navy-deep/80">MES Log</button>
       <button data-tab="5" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium text-navy-deep/80">Plan Lock</button>
       <button data-tab="8" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium text-navy-deep/80">Rules</button>
+      <button data-tab="9" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium text-navy-deep/80">History</button>
     </nav>
 
     <div class="flex items-center gap-3 shrink-0">
@@ -846,6 +848,21 @@ tailwind.config = {
     <div class="flex items-center gap-2 mt-3">
       <button id="saveRuleBtn" class="btn btn-primary"><i data-lucide="check" class="w-4 h-4"></i> Save rule</button>
       <button id="cancelRuleBtn" class="btn btn-ghost">Cancel</button>
+    </div>
+  </div>
+</section>
+
+<section id="page9" class="page hidden">
+  <div class="card p-6">
+    <div class="flex items-start justify-between mb-5">
+      <div>
+        <h2 class="display text-2xl font-semibold text-navy-ink">History Gantt</h2>
+        <p class="text-sm text-navy-deep/60">One row per load day · actual data from MES log</p>
+      </div>
+      <div id="histGanttLegend" class="flex items-center gap-2 flex-wrap max-w-md justify-end"></div>
+    </div>
+    <div id="histGanttWrap" class="overflow-x-auto" style="max-width:100%;">
+      <div id="histGanttInner" style="min-width:1400px; position:relative;"></div>
     </div>
   </div>
 </section>
@@ -4204,7 +4221,7 @@ function timeDiffMin(start,end){
 }
 
 /* ---------------- Tabs ---------------- */
-const TOTAL_PAGES = 8;
+const TOTAL_PAGES = 9;
 function switchTab(n) {
   state.ui.page = n;
   document.querySelectorAll('#tabs .tab-btn').forEach(b => {
@@ -4531,6 +4548,87 @@ function boot() {
   requestAnimationFrame(robotPoseTick);
 }
 window.addEventListener('DOMContentLoaded', boot);
+
+// ── History Gantt ─────────────────────────────────────────────────────────────
+const HISTORY_DATA = {"anchorTs": "2026-04-23T00:00:00", "batches": [{"id": 0, "batchIdx": 0, "dayIdx": 4, "color": "#EFD9A3", "startTs": "2026-04-23T06:00:00", "startMin": 601, "size": 33, "role": "done", "stages": [{"stage": 0, "startMin": 747, "endMin": 958}, {"stage": 2, "startMin": 1189, "endMin": 1396}, {"stage": 3, "startMin": 1860, "endMin": 4630}, {"stage": 4, "startMin": 4482, "endMin": 5161}, {"stage": 5, "startMin": 4768, "endMin": 5426}, {"stage": 6, "startMin": 5103, "endMin": 5729}, {"stage": 7, "startMin": 5730, "endMin": 6056}, {"stage": 9, "startMin": 993, "endMin": 6777}, {"stage": 11, "startMin": 603, "endMin": 9673}], "loadDate": "2026-04-23"}, {"id": 1, "batchIdx": 1, "dayIdx": 5, "color": "#E8A9A0", "startTs": "2026-04-24T06:00:00", "startMin": 1952, "size": 43, "role": "done", "stages": [{"stage": 0, "startMin": 3288, "endMin": 3545}, {"stage": 2, "startMin": 3597, "endMin": 3868}, {"stage": 3, "startMin": 1958, "endMin": 6599}, {"stage": 4, "startMin": 4673, "endMin": 7035}, {"stage": 5, "startMin": 5272, "endMin": 7391}, {"stage": 6, "startMin": 6374, "endMin": 7599}, {"stage": 7, "startMin": 6852, "endMin": 7275}, {"stage": 9, "startMin": 2680, "endMin": 8320}, {"stage": 11, "startMin": 2265, "endMin": 8415}], "loadDate": "2026-04-24"}, {"id": 2, "batchIdx": 2, "dayIdx": 0, "color": "#9FC9C3", "startTs": "2026-04-26T06:00:00", "startMin": 4655, "size": 63, "role": "done", "stages": [{"stage": 0, "startMin": 5439, "endMin": 5710}, {"stage": 2, "startMin": 5569, "endMin": 6052}, {"stage": 3, "startMin": 6602, "endMin": 6840}, {"stage": 4, "startMin": 7037, "endMin": 7262}, {"stage": 5, "startMin": 7619, "endMin": 8338}, {"stage": 6, "startMin": 8221, "endMin": 8741}, {"stage": 9, "startMin": 5684, "endMin": 9462}, {"stage": 11, "startMin": 4665, "endMin": 9682}], "loadDate": "2026-04-26"}, {"id": 3, "batchIdx": 3, "dayIdx": 2, "color": "#C8B6D9", "startTs": "2026-04-28T06:00:00", "startMin": 7400, "size": 36, "role": "done", "stages": [{"stage": 0, "startMin": 7430, "endMin": 7737}, {"stage": 2, "startMin": 7896, "endMin": 8180}, {"stage": 3, "startMin": 9079, "endMin": 9549}, {"stage": 4, "startMin": 9443, "endMin": 10062}, {"stage": 5, "startMin": 9910, "endMin": 10320}, {"stage": 9, "startMin": 7676, "endMin": 11041}, {"stage": 11, "startMin": 8471, "endMin": 11388}], "loadDate": "2026-04-28"}, {"id": 4, "batchIdx": 4, "dayIdx": 3, "color": "#B2C9A8", "startTs": "2026-04-29T06:00:00", "startMin": 8701, "size": 44, "role": "done", "stages": [{"stage": 0, "startMin": 8779, "endMin": 9058}, {"stage": 2, "startMin": 9166, "endMin": 9435}, {"stage": 3, "startMin": 9061, "endMin": 10422}, {"stage": 4, "startMin": 9563, "endMin": 11323}, {"stage": 5, "startMin": 9881, "endMin": 11803}, {"stage": 6, "startMin": 10211, "endMin": 12039}, {"stage": 7, "startMin": 10458, "endMin": 11993}, {"stage": 9, "startMin": 9025, "endMin": 12760}, {"stage": 11, "startMin": 8701, "endMin": 13084}], "loadDate": "2026-04-29"}, {"id": 5, "batchIdx": 5, "dayIdx": 4, "color": "#E6C494", "startTs": "2026-04-30T06:00:00", "startMin": 10430, "size": 38, "role": "done", "stages": [{"stage": 0, "startMin": 10491, "endMin": 10801}, {"stage": 2, "startMin": 10922, "endMin": 11192}, {"stage": 3, "startMin": 11820, "endMin": 12521}, {"stage": 4, "startMin": 12475, "endMin": 13800}, {"stage": 5, "startMin": 13481, "endMin": 14272}, {"stage": 6, "startMin": 13917, "endMin": 14319}, {"stage": 7, "startMin": 14291, "endMin": 14297}, {"stage": 9, "startMin": 10737, "endMin": 15040}, {"stage": 11, "startMin": 10437, "endMin": 15488}], "loadDate": "2026-04-30"}, {"id": 6, "batchIdx": 6, "dayIdx": 5, "color": "#D9A8B2", "startTs": "2026-05-01T06:00:00", "startMin": 11837, "size": 42, "role": "done", "stages": [{"stage": 0, "startMin": 12108, "endMin": 12586}, {"stage": 2, "startMin": 12108, "endMin": 13030}, {"stage": 3, "startMin": 12013, "endMin": 14550}, {"stage": 4, "startMin": 13779, "endMin": 15386}, {"stage": 5, "startMin": 14258, "endMin": 15836}, {"stage": 6, "startMin": 15406, "endMin": 16121}, {"stage": 9, "startMin": 12354, "endMin": 16842}, {"stage": 11, "startMin": 12239, "endMin": 16946}], "loadDate": "2026-05-01"}, {"id": 7, "batchIdx": 0, "dayIdx": 6, "color": "#EFD9A3", "startTs": "2026-05-02T06:00:00", "startMin": 13189, "size": 2, "role": "done", "stages": [{"stage": 3, "startMin": 13832, "endMin": 14237}, {"stage": 4, "startMin": 14325, "endMin": 14329}, {"stage": 5, "startMin": 14883, "endMin": 14887}, {"stage": 6, "startMin": 15400, "endMin": 15403}, {"stage": 9, "startMin": 14076, "endMin": 16124}, {"stage": 11, "startMin": 15426, "endMin": 16839}], "loadDate": "2026-05-02"}, {"id": 8, "batchIdx": 1, "dayIdx": 0, "color": "#E8A9A0", "startTs": "2026-05-03T06:00:00", "startMin": 14556, "size": 37, "role": "done", "stages": [{"stage": 0, "startMin": 14575, "endMin": 14833}, {"stage": 2, "startMin": 15033, "endMin": 15314}, {"stage": 3, "startMin": 15838, "endMin": 16063}, {"stage": 4, "startMin": 16405, "endMin": 17232}, {"stage": 5, "startMin": 16788, "endMin": 17549}, {"stage": 6, "startMin": 17114, "endMin": 17776}, {"stage": 7, "startMin": 17415, "endMin": 17566}, {"stage": 9, "startMin": 14821, "endMin": 18496}, {"stage": 11, "startMin": 18504, "endMin": 18571}], "loadDate": "2026-05-03"}, {"id": 9, "batchIdx": 2, "dayIdx": 1, "color": "#9FC9C3", "startTs": "2026-05-04T06:00:00", "startMin": 16123, "size": 36, "role": "done", "stages": [{"stage": 0, "startMin": 16144, "endMin": 16389}, {"stage": 2, "startMin": 16498, "endMin": 16775}, {"stage": 3, "startMin": 17276, "endMin": 17636}, {"stage": 4, "startMin": 18004, "endMin": 18502}, {"stage": 5, "startMin": 18748, "endMin": 18946}, {"stage": 6, "startMin": 19043, "endMin": 19074}, {"stage": 9, "startMin": 16390, "endMin": 19795}, {"stage": 11, "startMin": 20060, "endMin": 20123}], "loadDate": "2026-05-04"}, {"id": 10, "batchIdx": 3, "dayIdx": 2, "color": "#C8B6D9", "startTs": "2026-05-05T06:00:00", "startMin": 17699, "size": 37, "role": "done", "stages": [{"stage": 0, "startMin": 17721, "endMin": 17995}, {"stage": 2, "startMin": 18130, "endMin": 18408}, {"stage": 3, "startMin": 18953, "endMin": 19237}, {"stage": 4, "startMin": 19289, "endMin": 20503}, {"stage": 5, "startMin": 19604, "endMin": 20817}, {"stage": 6, "startMin": 20319, "endMin": 20672}, {"stage": 7, "startMin": 20657, "endMin": 20663}, {"stage": 9, "startMin": 17967, "endMin": 21393}, {"stage": 11, "startMin": 21455, "endMin": 21518}], "loadDate": "2026-05-05"}, {"id": 11, "batchIdx": 4, "dayIdx": 3, "color": "#B2C9A8", "startTs": "2026-05-06T06:00:00", "startMin": 19248, "size": 48, "role": "done", "stages": [{"stage": 0, "startMin": 19327, "endMin": 20082}, {"stage": 2, "startMin": 19725, "endMin": 20000}, {"stage": 3, "startMin": 20505, "endMin": 21125}, {"stage": 4, "startMin": 21433, "endMin": 21901}, {"stage": 5, "startMin": 21699, "endMin": 22170}, {"stage": 6, "startMin": 22001, "endMin": 22348}, {"stage": 7, "startMin": 22279, "endMin": 22618}, {"stage": 8, "startMin": 22286, "endMin": 22292}, {"stage": 9, "startMin": 19573, "endMin": 22891}, {"stage": 11, "startMin": 19268, "endMin": 20146}], "loadDate": "2026-05-06"}, {"id": 12, "batchIdx": 5, "dayIdx": 4, "color": "#E6C494", "startTs": "2026-05-07T06:00:00", "startMin": 20732, "size": 38, "role": "done", "stages": [{"stage": 0, "startMin": 20748, "endMin": 21037}, {"stage": 2, "startMin": 21146, "endMin": 21411}, {"stage": 3, "startMin": 21906, "endMin": 22503}, {"stage": 4, "startMin": 22172, "endMin": 22214}, {"stage": 5, "startMin": 22529, "endMin": 22533}, {"stage": 9, "startMin": 20994, "endMin": 22774}, {"stage": 11, "startMin": 20755, "endMin": 21515}], "loadDate": "2026-05-07"}, {"id": 13, "batchIdx": 6, "dayIdx": 5, "color": "#D9A8B2", "startTs": "2026-05-08T06:00:00", "startMin": 22587, "size": 37, "role": "in-flight-backup", "stages": [{"stage": 0, "startMin": 22620, "endMin": 22874}, {"stage": 2, "startMin": 22920, "endMin": 22984}, {"stage": 9, "startMin": 22866, "endMin": 22980}], "loadDate": "2026-05-08"}], "robotBusyUntil": 0};
+
+function renderHistoryGantt() {
+  const wrap = document.getElementById('histGanttInner');
+  const leg  = document.getElementById('histGanttLegend');
+  if (!wrap) return;
+  clear(leg);
+  STAGE_NAMES.forEach((n, i) => {
+    const chip = el('span', {class:'chip', style:{background:stageChipBg(i), color:'#12335C', borderColor:stageChipBg(i)}});
+    chip.appendChild(el('span', {class:'chip-dot', style:{color:STAGE_COLORS[i]}}));
+    chip.appendChild(document.createTextNode(' ' + n));
+    leg.appendChild(chip);
+  });
+
+  const anchor   = new Date(HISTORY_DATA.anchorTs);
+  // span from first batch load to last batch end + 1 day buffer
+  const totalMin = 16 * 24 * 60;   // 16 days
+  clear(wrap);
+  const outer = el('div', {style:{position:'relative'}});
+
+  // Header
+  const hdr = el('div', {style:{display:'flex', borderBottom:'1px solid var(--line)', position:'sticky', top:'0', background:'#fff', zIndex:'3'}});
+  hdr.appendChild(el('div', {style:{width:'140px', padding:'6px 12px', fontSize:'11px', color:'var(--navy-deep)', fontWeight:'600', position:'sticky', left:'0', background:'#fff', zIndex:'4', borderRight:'1px solid var(--line)'}}, 'Batch'));
+  for (let d = 0; d < 16; d++) {
+    const at = new Date(anchor); at.setDate(anchor.getDate() + d);
+    const cell = el('div', {style:{flex:'1', padding:'6px 4px', fontSize:'10px', color:'var(--navy-deep)', fontWeight:'600', borderRight:'1px solid var(--line)', minWidth:'0'}});
+    cell.appendChild(document.createTextNode(DAY_SHORT[at.getDay()] + ' '));
+    cell.appendChild(el('span', {class:'text-navy-deep/60 font-normal'}, fmtShortDate(at)));
+    hdr.appendChild(cell);
+  }
+  outer.appendChild(hdr);
+
+  for (const b of HISTORY_DATA.batches) {
+    const row = el('div', {style:{display:'flex', alignItems:'center', borderBottom:'1px solid var(--line)'}});
+    const lbl = el('div', {style:{width:'140px', padding:'8px 12px', position:'sticky', left:'0', background:'#fff', zIndex:'2', borderRight:'1px solid var(--line)'}});
+    const lblInner = el('div', {class:'flex items-center gap-2'});
+    lblInner.appendChild(el('span', {class:'w-3 h-3 rounded-full shrink-0', style:{background:b.color}}));
+    const lblTxt = el('div');
+    const d = new Date(b.loadDate);
+    lblTxt.appendChild(el('div', {class:'text-sm font-medium text-navy-ink'}, fmtShortDate(d)));
+    lblTxt.appendChild(el('div', {class:'text-[10px] uppercase tracking-[.1em] text-navy-deep/55'}, b.size + ' hangers'));
+    lblInner.appendChild(lblTxt);
+    lbl.appendChild(lblInner);
+    row.appendChild(lbl);
+
+    const track = el('div', {
+      class:'relative gantt-row',
+      style:{flex:'1', background:'repeating-linear-gradient(90deg,transparent 0,transparent calc(100%/384 - 1px),rgba(10,31,61,.04) calc(100%/384 - 1px), rgba(10,31,61,.04) calc(100%/384))'}
+    });
+    b.stages.filter(s => s.startMin < totalMin && s.endMin > 0).forEach(s => {
+      const start = Math.max(0, s.startMin), end = Math.min(totalMin, s.endMin);
+      const left = (start / totalMin) * 100, width = Math.max((end - start) / totalMin * 100, 0.15);
+      const bar = el('div', {
+        class:'gantt-stage',
+        title: STAGE_NAMES[s.stage] + ' · ' + b.loadDate,
+        style:{
+          left: left + '%', width: width + '%',
+          background: s.stage === 11 ? '#8FBF7B' : b.color,
+          border: '1px solid rgba(10,31,61,.2)',
+          opacity: s.stage === 1 ? 0.55 : (s.stage >= 9 ? 0.75 : 1),
+        }
+      });
+      track.appendChild(bar);
+    });
+    row.appendChild(track);
+    outer.appendChild(row);
+  }
+  wrap.appendChild(outer);
+  const gw = document.getElementById('histGanttWrap');
+  if (gw) gw.scrollLeft = 0;
+}
+
+// Render history gantt on first visit to tab 9
+const _origSwitchTab = switchTab;
+switchTab = function(n) {
+  _origSwitchTab(n);
+  if (n === 9) renderHistoryGantt();
+};
+
 </script>
 </body>
 </html>
