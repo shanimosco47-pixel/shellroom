@@ -4688,7 +4688,8 @@ function renderHistoryGantt(fromDate, toDate) {
       const spanS = dip.segs[0][0], spanE = dip.segs[dip.segs.length-1][1];
       const totalActual = dip.segs.reduce((a,[s,e])=>a+(e-s),0);
       const tip = 'Dip ' + dip.n + ' (' + (isPrime?'Prime':'Backup') + ')\n'
-                + minsFmt(spanS) + ' \u2192 ' + minsFmt(spanE) + '  (' + durFmt(0, spanE - spanS) + ')';
+                + minsFmt(spanS) + ' \u2192 ' + minsFmt(spanE) + '\n'
+                + 'Window: ' + durFmt(0, spanE - spanS) + '  |  Robot work: ' + durFmt(0, totalActual) + ' in ' + dip.segs.length + (dip.segs.length>1?' sessions':' session');
 
       // Faint background span (shows full dip window first→last session)
       if (spanS < winTo && spanE > winFrom) {
@@ -4698,7 +4699,7 @@ function renderHistoryGantt(fromDate, toDate) {
         track.appendChild(el('div', {title:tip, style:{
           position:'absolute', top:'18px', height:'16px',
           left:sl+'%', width:sw+'%',
-          background:b.color, opacity:'0.15',
+          background:b.color, opacity:'0.22',
           borderRadius:'2px', cursor:'default', pointerEvents:'none'
         }}));
       }
