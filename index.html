@@ -854,12 +854,22 @@ tailwind.config = {
 
 <section id="page9" class="page hidden">
   <div class="card p-6">
-    <div class="flex items-start justify-between mb-5">
+    <div class="flex items-start justify-between mb-4">
       <div>
         <h2 class="display text-2xl font-semibold text-navy-ink">History Gantt</h2>
         <p class="text-sm text-navy-deep/60">One row per load day · actual data from MES log</p>
       </div>
       <div id="histGanttLegend" class="flex items-center gap-2 flex-wrap max-w-md justify-end"></div>
+    </div>
+    <div class="flex items-center gap-3 mb-4 flex-wrap">
+      <label class="text-sm font-600 text-navy-deep">From</label>
+      <input id="histFrom" type="date" value="2026-04-23"
+        class="border border-line rounded px-2 py-1 text-sm text-navy-ink bg-white" style="cursor:pointer">
+      <label class="text-sm font-600 text-navy-deep">To</label>
+      <input id="histTo" type="date" value="2026-05-08"
+        class="border border-line rounded px-2 py-1 text-sm text-navy-ink bg-white" style="cursor:pointer">
+      <button id="histApply" class="btn-primary text-sm px-4 py-1 rounded font-600">Apply</button>
+      <button id="histReset" class="text-sm px-3 py-1 rounded border border-line text-navy-deep font-500">Reset</button>
     </div>
     <div id="histGanttWrap" class="overflow-x-auto" style="max-width:100%;">
       <div id="histGanttInner" style="min-width:1400px; position:relative;"></div>
@@ -4556,7 +4566,7 @@ const HIST_COLORS = ["#EFD9A3","#E8A9A0","#9FC9C3","#C8B6D9","#B2C9A8","#E6C494"
 
 const HISTORY_DATA = {"anchorTs":"2026-04-23T00:00:00","batches":[{"loadDate":"2026-04-23","color":"#EFD9A3","size":33,"loadStart":601,"unloadMin":9613,"dips":[{"n":1,"conv":"P","segs":[[747,840],[851,958]]},{"n":2,"conv":"P","segs":[[1189,1397]]},{"n":3,"conv":"B","segs":[[1531,1677]]},{"n":4,"conv":"B","segs":[[1860,1952],[4387,4402],[4598,4631]]},{"n":5,"conv":"B","segs":[[4482,4542],[4566,4598],[4632,4648],[4859,5102],[5142,5163]]},{"n":6,"conv":"B","segs":[[4768,4859],[5110,5116],[5164,5176],[5406,5427]]},{"n":7,"conv":"B","segs":[[5103,5110],[5211,5267],[5402,5406],[5428,5433],[5724,5729]]},{"n":8,"conv":"B","segs":[[5730,5734],[6053,6057]]}]},{"loadDate":"2026-04-24","color":"#E8A9A0","size":43,"loadStart":1952,"unloadMin":8355,"dips":[{"n":1,"conv":"P","segs":[[1958,1972],[3288,3546]]},{"n":2,"conv":"P","segs":[[3597,3869]]},{"n":3,"conv":"B","segs":[[3925,3930],[4155,4371],[4381,4386]]},{"n":4,"conv":"B","segs":[[4171,4176],[4648,4653],[4679,4694],[5294,5344],[5740,5751],[6077,6088],[6458,6464],[6501,6601]]},{"n":5,"conv":"B","segs":[[4673,4679],[5176,5181],[5277,5293],[6396,6458],[6489,6501],[6905,6911],[6923,6935],[6948,7036]]},{"n":6,"conv":"B","segs":[[5272,5277],[5433,5437],[6379,6395],[6864,6922],[6935,6947],[7290,7391]]},{"n":7,"conv":"B","segs":[[6374,6379],[6842,6861],[7277,7303],[7316,7323],[7561,7573],[7593,7600]]},{"n":8,"conv":"B","segs":[[6852,6856],[7264,7275]]}]},{"loadDate":"2026-04-26","color":"#9FC9C3","size":63,"loadStart":4655,"unloadMin":9622,"dips":[{"n":1,"conv":"P","segs":[[5439,5557],[5576,5711]]},{"n":2,"conv":"P","segs":[[5569,5576],[5765,6053]]},{"n":3,"conv":"B","segs":[[5907,5913],[6096,6129],[6149,6182],[6201,6367]]},{"n":4,"conv":"B","segs":[[6239,6244],[6602,6790],[6813,6841]]},{"n":5,"conv":"B","segs":[[6698,6703],[7037,7104],[7119,7263]]},{"n":6,"conv":"B","segs":[[7147,7152],[7619,7626],[7755,7895],[8299,8338]]},{"n":7,"conv":"B","segs":[[7841,7846],[8221,8298],[8718,8742]]},{"n":8,"conv":"B","segs":[[8273,8276]]}]},{"loadDate":"2026-04-28","color":"#C8B6D9","size":36,"loadStart":7400,"unloadMin":11328,"dips":[{"n":1,"conv":"P","segs":[[7430,7559],[7626,7738]]},{"n":2,"conv":"P","segs":[[7896,8181]]},{"n":3,"conv":"B","segs":[[8371,8416],[8479,8573],[8595,8655]]},{"n":4,"conv":"B","segs":[[9079,9163],[9448,9453],[9464,9518],[9530,9550]]},{"n":5,"conv":"B","segs":[[9443,9463],[9581,9586],[9900,9905],[9915,9968],[9978,10031],[10043,10064]]},{"n":6,"conv":"B","segs":[[9910,9914],[9959,9976],[10203,10206],[10217,10286],[10298,10321]]}]},{"loadDate":"2026-04-29","color":"#B2C9A8","size":44,"loadStart":8701,"unloadMin":13024,"dips":[{"n":1,"conv":"P","segs":[[8779,8819],[8829,9023],[9033,9079],[9090,9095],[9518,9529]]},{"n":2,"conv":"P","segs":[[9166,9435],[9563,9581],[9905,9910],[10031,10042]]},{"n":3,"conv":"B","segs":[[9643,9866],[9881,9895],[10206,10211],[10287,10298]]},{"n":4,"conv":"B","segs":[[10066,10181],[10211,10216],[10329,10423],[10453,10458],[10547,10554]]},{"n":5,"conv":"B","segs":[[10458,10461],[10757,10761],[10802,10919],[11210,11260],[11281,11325]]},{"n":6,"conv":"B","segs":[[11341,11355],[11587,11590],[11617,11683],[11712,11804]]},{"n":7,"conv":"B","segs":[[11601,11613],[11996,12040]]},{"n":8,"conv":"B","segs":[[11990,11994]]}]},{"loadDate":"2026-04-30","color":"#E6C494","size":38,"loadStart":10430,"unloadMin":15428,"dips":[{"n":1,"conv":"P","segs":[[10491,10546],[10556,10622],[10635,10754],[10788,10802]]},{"n":2,"conv":"P","segs":[[10922,11193]]},{"n":3,"conv":"B","segs":[[11370,11570],[11581,11587]]},{"n":4,"conv":"B","segs":[[11820,11880],[11916,11970],[12045,12077],[12394,12437],[12507,12522]]},{"n":5,"conv":"B","segs":[[12868,12971],[13648,13691],[13713,13758],[13785,13802]]},{"n":6,"conv":"B","segs":[[13481,13546],[13613,13634],[13962,13999],[14226,14273]]},{"n":7,"conv":"B","segs":[[13917,13960],[14302,14320]]},{"n":8,"conv":"B","segs":[[14291,14298]]}]},{"loadDate":"2026-05-01","color":"#D9A8B2","size":42,"loadStart":11837,"unloadMin":16886,"dips":[{"n":1,"conv":"P","segs":[[12013,12016],[12115,12227],[12256,12393],[12501,12507],[12580,12587]]},{"n":2,"conv":"P","segs":[[12108,12115],[12587,12736],[12745,12858],[13025,13030],[13779,13785]]},{"n":3,"conv":"B","segs":[[13030,13187],[13398,13448],[14258,14262]]},{"n":4,"conv":"B","segs":[[13837,13876],[13911,13916],[14370,14458],[14479,14551]]},{"n":5,"conv":"B","segs":[[14284,14289],[14330,14369],[14931,15025],[15328,15387]]},{"n":6,"conv":"B","segs":[[14552,14555],[14888,14930],[15324,15328],[15710,15837]]},{"n":7,"conv":"B","segs":[[15406,15422],[15698,15709],[16068,16122]]}]},{"loadDate":"2026-05-02","color":"#EFD9A3","size":2,"loadStart":13189,"unloadMin":16779,"dips":[{"n":1,"conv":"B","segs":[[13832,13837],[14234,14238]]},{"n":2,"conv":"B","segs":[[14325,14330]]},{"n":3,"conv":"B","segs":[[14883,14888]]},{"n":4,"conv":"B","segs":[[15400,15404]]}]},{"loadDate":"2026-05-03","color":"#E8A9A0","size":37,"loadStart":14556,"unloadMin":18511,"dips":[{"n":1,"conv":"P","segs":[[14575,14834]]},{"n":2,"conv":"P","segs":[[15033,15169],[15179,15315]]},{"n":3,"conv":"B","segs":[[15439,15557],[15567,15672]]},{"n":4,"conv":"B","segs":[[15838,15997],[16022,16064]]},{"n":5,"conv":"B","segs":[[16405,16498],[17126,17233]]},{"n":6,"conv":"B","segs":[[16788,16839],[16850,16879],[17423,17439],[17478,17550]]},{"n":7,"conv":"B","segs":[[17114,17121],[17246,17267],[17677,17688],[17765,17776]]},{"n":8,"conv":"B","segs":[[17415,17419],[17562,17567]]}]},{"loadDate":"2026-05-04","color":"#9FC9C3","size":36,"loadStart":16123,"unloadMin":20063,"dips":[{"n":1,"conv":"P","segs":[[16144,16390]]},{"n":2,"conv":"P","segs":[[16498,16620],[16637,16775]]},{"n":3,"conv":"B","segs":[[16888,17090]]},{"n":4,"conv":"B","segs":[[17276,17409],[17573,17637]]},{"n":5,"conv":"B","segs":[[18004,18112],[18416,18504]]},{"n":6,"conv":"B","segs":[[18748,18831],[18871,18946]]},{"n":7,"conv":"B","segs":[[19043,19074]]}]},{"loadDate":"2026-05-05","color":"#C8B6D9","size":37,"loadStart":17699,"unloadMin":21458,"dips":[{"n":1,"conv":"P","segs":[[17721,17765],[17782,17996]]},{"n":2,"conv":"P","segs":[[18141,18408]]},{"n":3,"conv":"B","segs":[[18294,18301],[18517,18741]]},{"n":4,"conv":"B","segs":[[18652,18657],[18953,19036],[19119,19238]]},{"n":5,"conv":"B","segs":[[19151,19156],[19289,19321],[19635,19721],[20005,20015],[20025,20059],[20467,20504]]},{"n":6,"conv":"B","segs":[[19604,19634],[19706,19711],[20338,20414],[20443,20466],[20790,20817]]},{"n":7,"conv":"B","segs":[[20319,20337],[20402,20405],[20665,20672]]},{"n":8,"conv":"B","segs":[[20657,20664]]}]},{"loadDate":"2026-05-06","color":"#B2C9A8","size":48,"loadStart":19248,"unloadMin":20086,"dips":[{"n":1,"conv":"P","segs":[[19327,19589],[20078,20083],[20559,20565]]},{"n":2,"conv":"P","segs":[[19725,19739],[19757,20000],[21444,21449]]},{"n":3,"conv":"B","segs":[[20063,20283],[21710,21715]]},{"n":4,"conv":"B","segs":[[20505,20516],[20554,20650],[20682,20732],[21076,21126],[22009,22013]]},{"n":5,"conv":"B","segs":[[21433,21454],[21722,21902]]},{"n":6,"conv":"B","segs":[[21699,21720],[22018,22170]]},{"n":7,"conv":"B","segs":[[22001,22017],[22292,22348]]},{"n":8,"conv":"B","segs":[[22606,22619]]},{"n":9,"conv":"B","segs":[[22286,22292]]}]},{"loadDate":"2026-05-07","color":"#E6C494","size":38,"loadStart":20732,"unloadMin":21455,"dips":[{"n":1,"conv":"P","segs":[[20748,20790],[20821,21038]]},{"n":2,"conv":"P","segs":[[21146,21412]]},{"n":3,"conv":"B","segs":[[21467,21668]]},{"n":4,"conv":"B","segs":[[21906,21948],[22216,22232],[22259,22264],[22366,22504]]},{"n":5,"conv":"B","segs":[[22172,22215]]},{"n":6,"conv":"B","segs":[[22529,22534]]}]},{"loadDate":"2026-05-08","color":"#D9A8B2","size":37,"loadStart":22587,"unloadMin":null,"dips":[{"n":1,"conv":"P","segs":[[22620,22875]]},{"n":2,"conv":"P","segs":[[22920,22977]]}]}]};
 
-function renderHistoryGantt() {
+function renderHistoryGantt(fromDate, toDate) {
   const wrap = document.getElementById('histGanttInner');
   const leg  = document.getElementById('histGanttLegend');
   if (!wrap) return;
@@ -4571,7 +4581,10 @@ function renderHistoryGantt() {
   });
 
   const anchor   = new Date(HISTORY_DATA.anchorTs);
-  const totalMin = 16 * 24 * 60;
+  // Window: offset in minutes from anchor
+  const winFrom  = fromDate ? Math.max(0, (fromDate - anchor) / 60000) : 0;
+  const winTo    = toDate   ? (toDate   - anchor) / 60000 + 24*60      : 16 * 24 * 60;
+  const totalMin = winTo - winFrom;
   clear(wrap);
   const outer = el('div', {style:{position:'relative'}});
 
@@ -4594,9 +4607,10 @@ function renderHistoryGantt() {
   // ── Header ──────────────────────────────────────────────────────────
   const hdr = el('div', {style:{display:'flex',borderBottom:'2px solid var(--line)',position:'sticky',top:'0',background:'var(--cream,#fff)',zIndex:'3'}});
   hdr.appendChild(mkLabel({fontSize:'11px',color:'var(--navy-deep)',fontWeight:'700',display:'flex',alignItems:'center'}, 'Batch'));
-  for (let d = 0; d < 16; d++) {
-    const at = new Date(anchor); at.setDate(anchor.getDate() + d);
-    const cell = el('div', {style:{flex:'1',padding:'6px 4px',fontSize:'10px',color:'var(--navy-deep)',fontWeight:'600',borderRight:'1px solid var(--line)',minWidth:'0',whiteSpace:'nowrap'}});
+  const winDays = Math.ceil(totalMin / (24*60));
+  for (let d = 0; d < winDays; d++) {
+    const at = new Date(anchor.getTime() + (winFrom + d * 24 * 60) * 60000);
+    const cell = el('div', {style:{flex:'1',padding:'6px 4px',fontSize:'10px',color:'#12335C',fontWeight:'600',borderRight:'1px solid var(--line)',minWidth:'0',whiteSpace:'nowrap'}});
     cell.textContent = DAY_SHORT[at.getDay()] + ' ' + fmtShortDate(at);
     hdr.appendChild(cell);
   }
@@ -4604,10 +4618,10 @@ function renderHistoryGantt() {
 
   // Helper: add day vertical gridlines to any track element
   function addGridlines(track) {
-    for (let d = 1; d < 16; d++) {
+    for (let d = 1; d < winDays; d++) {
       track.appendChild(el('div', {style:{
         position:'absolute', top:'0', bottom:'0', width:'1px',
-        left: (d/16*100) + '%',
+        left: (d/winDays*100) + '%',
         background:'rgba(10,31,61,.07)', pointerEvents:'none'
       }}));
     }
@@ -4622,8 +4636,10 @@ function renderHistoryGantt() {
   const robotTrack = el('div', {style:{flex:'1',position:'relative',height:'28px'}});
   addGridlines(robotTrack);
   ROBOT_SEGS.forEach(([s, e, ci]) => {
-    const left = (Math.max(0,s)/totalMin)*100;
-    const w = Math.max((Math.min(totalMin,e)-Math.max(0,s))/totalMin*100, 0.06);
+    if (e <= winFrom || s >= winTo) return;
+    const cs = Math.max(s, winFrom), ce = Math.min(e, winTo);
+    const left = ((cs - winFrom)/totalMin)*100;
+    const w = Math.max((ce - cs)/totalMin*100, 0.06);
     const seg = el('div', {
       title: minsFmt(s) + ' → ' + minsFmt(e),
       style:{position:'absolute',top:'6px',height:'16px',left:left+'%',width:w+'%',
@@ -4636,15 +4652,17 @@ function renderHistoryGantt() {
 
   // ── Batch rows ───────────────────────────────────────────────────────
   for (const b of HISTORY_DATA.batches) {
+    // Skip batch if all its activity is outside the window
+    const batchEnd = b.unloadMin || (b.dips.length ? b.dips[b.dips.length-1].segs.slice(-1)[0][1] : b.loadStart);
+    if (batchEnd !== null && batchEnd < winFrom) continue;
+    if (b.loadStart !== null && b.loadStart > winTo) continue;
     const row = el('div', {style:{display:'flex',alignItems:'stretch',borderBottom:'1px solid var(--line)'}});
 
-    // Label: [dot + count] on first line, date on second
+    // Label: dot · hanger count · date
     const lbl = mkLabel({display:'flex',alignItems:'center',gap:'6px'});
-    const dotWrap = el('div', {style:{display:'flex',flexDirection:'column',alignItems:'center',gap:'2px',flexShrink:'0'}});
-    dotWrap.appendChild(el('span', {style:{width:'10px',height:'10px',borderRadius:'50%',background:b.color,display:'block'}}));
-    dotWrap.appendChild(el('span', {style:{fontSize:'10px',fontWeight:'700',color:'var(--navy-ink)',lineHeight:'1',whiteSpace:'nowrap'}, textContent: b.size + 'מ'}));
-    lbl.appendChild(dotWrap);
-    lbl.appendChild(el('div', {style:{fontSize:'12px',fontWeight:'600',color:'var(--navy-ink)'}, textContent: b.loadDate.slice(5)}));
+    lbl.appendChild(el('span', {style:{width:'10px',height:'10px',borderRadius:'50%',background:b.color,display:'block',flexShrink:'0'}}));
+    lbl.appendChild(el('span', {style:{fontSize:'13px',fontWeight:'700',color:'#12335C',whiteSpace:'nowrap',lineHeight:'1'}, textContent: b.size + ' מ'}));
+    lbl.appendChild(el('span', {style:{fontSize:'11px',fontWeight:'500',color:'#555',whiteSpace:'nowrap',lineHeight:'1'}, textContent: b.loadDate.slice(5)}));
     row.appendChild(lbl);
 
     const track = el('div', {style:{flex:'1',position:'relative',height:'52px'}});
@@ -4652,9 +4670,10 @@ function renderHistoryGantt() {
 
     // Load-wait bar
     if (b.loadStart != null && b.dips.length) {
-      const s = b.loadStart, e = b.dips[0].startMin;
-      if (e > s) {
-        const left = (s/totalMin)*100, w = Math.max((e-s)/totalMin*100, 0.1);
+      const s = b.loadStart, e = b.dips[0].segs[0][0];
+      if (e > s && e > winFrom && s < winTo) {
+        const cs = Math.max(s, winFrom), ce = Math.min(e, winTo);
+        const left = ((cs-winFrom)/totalMin)*100, w = Math.max((ce-cs)/totalMin*100, 0.1);
         track.appendChild(el('div', {
           title:'Load wait: '+minsFmt(s)+' → '+minsFmt(e)+' ('+durFmt(s,e)+')',
           style:{position:'absolute',top:'19px',height:'14px',left:left+'%',width:w+'%',background:'#aaa',opacity:'.3',borderRadius:'2px'}
@@ -4672,9 +4691,10 @@ function renderHistoryGantt() {
                 + minsFmt(spanS) + ' \u2192 ' + minsFmt(spanE) + '  (' + durFmt(0, spanE - spanS) + ')';
 
       // Faint background span (shows full dip window first→last session)
-      if (spanS < totalMin) {
-        const sl = (Math.max(0,spanS)/totalMin)*100;
-        const sw = Math.max((Math.min(totalMin,spanE)-Math.max(0,spanS))/totalMin*100, 0.12);
+      if (spanS < winTo && spanE > winFrom) {
+        const cs2 = Math.max(spanS, winFrom), ce2 = Math.min(spanE, winTo);
+        const sl = ((cs2-winFrom)/totalMin)*100;
+        const sw = Math.max((ce2-cs2)/totalMin*100, 0.12);
         track.appendChild(el('div', {title:tip, style:{
           position:'absolute', top:'18px', height:'16px',
           left:sl+'%', width:sw+'%',
@@ -4686,9 +4706,9 @@ function renderHistoryGantt() {
       // Actual work segments on top
       let firstBar = true;
       for (const [s, e] of dip.segs) {
-        if (s >= totalMin) continue;
-        const cs = Math.max(0, s), ce = Math.min(totalMin, e);
-        const left = (cs/totalMin)*100, w = Math.max((ce-cs)/totalMin*100, 0.12);
+        if (s >= winTo || e <= winFrom) continue;
+        const cs = Math.max(s, winFrom), ce = Math.min(e, winTo);
+        const left = ((cs-winFrom)/totalMin)*100, w = Math.max((ce-cs)/totalMin*100, 0.12);
         const bar = el('div', {title:tip, style:{
           position:'absolute', top:'11px', height:'30px',
           left:left+'%', width:w+'%',
@@ -4706,8 +4726,8 @@ function renderHistoryGantt() {
       }
     }
     // Unload marker
-    if (b.unloadMin != null && b.unloadMin < totalMin) {
-      const x = (b.unloadMin/totalMin)*100;
+    if (b.unloadMin != null && b.unloadMin >= winFrom && b.unloadMin < winTo) {
+      const x = ((b.unloadMin - winFrom)/totalMin)*100;
       track.appendChild(el('div', {title:'Unload: '+minsFmt(b.unloadMin), style:{
         position:'absolute', top:'10px', height:'32px', width:'4px',
         left:x+'%', background:'#8FBF7B', borderRadius:'2px', opacity:'.9'
@@ -4722,9 +4742,35 @@ function renderHistoryGantt() {
 
 // Render history gantt on first visit to tab 9
 const _origSwitchTab = switchTab;
+function getHistWindow() {
+  const anchor = new Date(HISTORY_DATA.anchorTs);
+  const fromEl = document.getElementById('histFrom');
+  const toEl   = document.getElementById('histTo');
+  const from = fromEl && fromEl.value ? new Date(fromEl.value + 'T00:00:00') : null;
+  const to   = toEl   && toEl.value   ? new Date(toEl.value   + 'T00:00:00') : null;
+  // Clamp: from must be >= anchor, to must be > from
+  const clampedFrom = from && from > anchor ? from : null;
+  const clampedTo   = to && (!clampedFrom || to > (clampedFrom || anchor)) ? to : null;
+  return [clampedFrom, clampedTo];
+}
+
+document.addEventListener('click', function(ev) {
+  if (ev.target && ev.target.id === 'histApply') {
+    const [f, t] = getHistWindow();
+    renderHistoryGantt(f, t);
+  }
+  if (ev.target && ev.target.id === 'histReset') {
+    const fromEl = document.getElementById('histFrom');
+    const toEl   = document.getElementById('histTo');
+    if (fromEl) fromEl.value = '2026-04-23';
+    if (toEl)   toEl.value   = '2026-05-08';
+    renderHistoryGantt(null, null);
+  }
+});
+
 switchTab = function(n) {
   _origSwitchTab(n);
-  if (n === 9) renderHistoryGantt();
+  if (n === 9) { const [f,t] = getHistWindow(); renderHistoryGantt(f, t); }
 };
 
 </script>
