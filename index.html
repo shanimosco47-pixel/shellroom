@@ -4662,14 +4662,29 @@ function renderHistoryGantt() {
       }
     }
 
-    // Dip bars — each dip rendered as actual robot-work segments (gaps = robot on other batches)
+    // Dip bars — faint span bar + actual robot-work segments on top
     for (const dip of b.dips) {
       if (!dip.segs || !dip.segs.length) continue;
       const isPrime = dip.conv === 'P';
+      const spanS = dip.segs[0][0], spanE = dip.segs[dip.segs.length-1][1];
       const totalActual = dip.segs.reduce((a,[s,e])=>a+(e-s),0);
       const tip = 'Dip ' + dip.n + ' (' + (isPrime?'Prime':'Backup') + ')\n'
-                + minsFmt(dip.segs[0][0]) + ' \u2192 ' + minsFmt(dip.segs[dip.segs.length-1][1]) + '\n'
+                + minsFmt(spanS) + ' \u2192 ' + minsFmt(spanE) + '\n'
                 + 'Robot work: ' + durFmt(0, totalActual) + ' in ' + dip.segs.length + (dip.segs.length>1?' sessions':' session');
+
+      // Faint background span (shows full dip window first→last session)
+      if (spanS < totalMin) {
+        const sl = (Math.max(0,spanS)/totalMin)*100;
+        const sw = Math.max((Math.min(totalMin,spanE)-Math.max(0,spanS))/totalMin*100, 0.12);
+        track.appendChild(el('div', {title:tip, style:{
+          position:'absolute', top:'18px', height:'16px',
+          left:sl+'%', width:sw+'%',
+          background:b.color, opacity:'0.15',
+          borderRadius:'2px', cursor:'default', pointerEvents:'none'
+        }}));
+      }
+
+      // Actual work segments on top
       let firstBar = true;
       for (const [s, e] of dip.segs) {
         if (s >= totalMin) continue;
