@@ -4550,76 +4550,109 @@ function boot() {
 window.addEventListener('DOMContentLoaded', boot);
 
 // ── History Gantt ─────────────────────────────────────────────────────────────
-const HISTORY_DATA = {"anchorTs": "2026-04-23T00:00:00", "batches": [{"id": 0, "batchIdx": 0, "dayIdx": 4, "color": "#EFD9A3", "startTs": "2026-04-23T06:00:00", "startMin": 601, "size": 33, "role": "done", "stages": [{"stage": 0, "startMin": 747, "endMin": 958}, {"stage": 2, "startMin": 1189, "endMin": 1396}, {"stage": 3, "startMin": 1860, "endMin": 4630}, {"stage": 4, "startMin": 4482, "endMin": 5161}, {"stage": 5, "startMin": 4768, "endMin": 5426}, {"stage": 6, "startMin": 5103, "endMin": 5729}, {"stage": 7, "startMin": 5730, "endMin": 6056}, {"stage": 9, "startMin": 993, "endMin": 6777}, {"stage": 11, "startMin": 603, "endMin": 9673}], "loadDate": "2026-04-23"}, {"id": 1, "batchIdx": 1, "dayIdx": 5, "color": "#E8A9A0", "startTs": "2026-04-24T06:00:00", "startMin": 1952, "size": 43, "role": "done", "stages": [{"stage": 0, "startMin": 3288, "endMin": 3545}, {"stage": 2, "startMin": 3597, "endMin": 3868}, {"stage": 3, "startMin": 1958, "endMin": 6599}, {"stage": 4, "startMin": 4673, "endMin": 7035}, {"stage": 5, "startMin": 5272, "endMin": 7391}, {"stage": 6, "startMin": 6374, "endMin": 7599}, {"stage": 7, "startMin": 6852, "endMin": 7275}, {"stage": 9, "startMin": 2680, "endMin": 8320}, {"stage": 11, "startMin": 2265, "endMin": 8415}], "loadDate": "2026-04-24"}, {"id": 2, "batchIdx": 2, "dayIdx": 0, "color": "#9FC9C3", "startTs": "2026-04-26T06:00:00", "startMin": 4655, "size": 63, "role": "done", "stages": [{"stage": 0, "startMin": 5439, "endMin": 5710}, {"stage": 2, "startMin": 5569, "endMin": 6052}, {"stage": 3, "startMin": 6602, "endMin": 6840}, {"stage": 4, "startMin": 7037, "endMin": 7262}, {"stage": 5, "startMin": 7619, "endMin": 8338}, {"stage": 6, "startMin": 8221, "endMin": 8741}, {"stage": 9, "startMin": 5684, "endMin": 9462}, {"stage": 11, "startMin": 4665, "endMin": 9682}], "loadDate": "2026-04-26"}, {"id": 3, "batchIdx": 3, "dayIdx": 2, "color": "#C8B6D9", "startTs": "2026-04-28T06:00:00", "startMin": 7400, "size": 36, "role": "done", "stages": [{"stage": 0, "startMin": 7430, "endMin": 7737}, {"stage": 2, "startMin": 7896, "endMin": 8180}, {"stage": 3, "startMin": 9079, "endMin": 9549}, {"stage": 4, "startMin": 9443, "endMin": 10062}, {"stage": 5, "startMin": 9910, "endMin": 10320}, {"stage": 9, "startMin": 7676, "endMin": 11041}, {"stage": 11, "startMin": 8471, "endMin": 11388}], "loadDate": "2026-04-28"}, {"id": 4, "batchIdx": 4, "dayIdx": 3, "color": "#B2C9A8", "startTs": "2026-04-29T06:00:00", "startMin": 8701, "size": 44, "role": "done", "stages": [{"stage": 0, "startMin": 8779, "endMin": 9058}, {"stage": 2, "startMin": 9166, "endMin": 9435}, {"stage": 3, "startMin": 9061, "endMin": 10422}, {"stage": 4, "startMin": 9563, "endMin": 11323}, {"stage": 5, "startMin": 9881, "endMin": 11803}, {"stage": 6, "startMin": 10211, "endMin": 12039}, {"stage": 7, "startMin": 10458, "endMin": 11993}, {"stage": 9, "startMin": 9025, "endMin": 12760}, {"stage": 11, "startMin": 8701, "endMin": 13084}], "loadDate": "2026-04-29"}, {"id": 5, "batchIdx": 5, "dayIdx": 4, "color": "#E6C494", "startTs": "2026-04-30T06:00:00", "startMin": 10430, "size": 38, "role": "done", "stages": [{"stage": 0, "startMin": 10491, "endMin": 10801}, {"stage": 2, "startMin": 10922, "endMin": 11192}, {"stage": 3, "startMin": 11820, "endMin": 12521}, {"stage": 4, "startMin": 12475, "endMin": 13800}, {"stage": 5, "startMin": 13481, "endMin": 14272}, {"stage": 6, "startMin": 13917, "endMin": 14319}, {"stage": 7, "startMin": 14291, "endMin": 14297}, {"stage": 9, "startMin": 10737, "endMin": 15040}, {"stage": 11, "startMin": 10437, "endMin": 15488}], "loadDate": "2026-04-30"}, {"id": 6, "batchIdx": 6, "dayIdx": 5, "color": "#D9A8B2", "startTs": "2026-05-01T06:00:00", "startMin": 11837, "size": 42, "role": "done", "stages": [{"stage": 0, "startMin": 12108, "endMin": 12586}, {"stage": 2, "startMin": 12108, "endMin": 13030}, {"stage": 3, "startMin": 12013, "endMin": 14550}, {"stage": 4, "startMin": 13779, "endMin": 15386}, {"stage": 5, "startMin": 14258, "endMin": 15836}, {"stage": 6, "startMin": 15406, "endMin": 16121}, {"stage": 9, "startMin": 12354, "endMin": 16842}, {"stage": 11, "startMin": 12239, "endMin": 16946}], "loadDate": "2026-05-01"}, {"id": 7, "batchIdx": 0, "dayIdx": 6, "color": "#EFD9A3", "startTs": "2026-05-02T06:00:00", "startMin": 13189, "size": 2, "role": "done", "stages": [{"stage": 3, "startMin": 13832, "endMin": 14237}, {"stage": 4, "startMin": 14325, "endMin": 14329}, {"stage": 5, "startMin": 14883, "endMin": 14887}, {"stage": 6, "startMin": 15400, "endMin": 15403}, {"stage": 9, "startMin": 14076, "endMin": 16124}, {"stage": 11, "startMin": 15426, "endMin": 16839}], "loadDate": "2026-05-02"}, {"id": 8, "batchIdx": 1, "dayIdx": 0, "color": "#E8A9A0", "startTs": "2026-05-03T06:00:00", "startMin": 14556, "size": 37, "role": "done", "stages": [{"stage": 0, "startMin": 14575, "endMin": 14833}, {"stage": 2, "startMin": 15033, "endMin": 15314}, {"stage": 3, "startMin": 15838, "endMin": 16063}, {"stage": 4, "startMin": 16405, "endMin": 17232}, {"stage": 5, "startMin": 16788, "endMin": 17549}, {"stage": 6, "startMin": 17114, "endMin": 17776}, {"stage": 7, "startMin": 17415, "endMin": 17566}, {"stage": 9, "startMin": 14821, "endMin": 18496}, {"stage": 11, "startMin": 18504, "endMin": 18571}], "loadDate": "2026-05-03"}, {"id": 9, "batchIdx": 2, "dayIdx": 1, "color": "#9FC9C3", "startTs": "2026-05-04T06:00:00", "startMin": 16123, "size": 36, "role": "done", "stages": [{"stage": 0, "startMin": 16144, "endMin": 16389}, {"stage": 2, "startMin": 16498, "endMin": 16775}, {"stage": 3, "startMin": 17276, "endMin": 17636}, {"stage": 4, "startMin": 18004, "endMin": 18502}, {"stage": 5, "startMin": 18748, "endMin": 18946}, {"stage": 6, "startMin": 19043, "endMin": 19074}, {"stage": 9, "startMin": 16390, "endMin": 19795}, {"stage": 11, "startMin": 20060, "endMin": 20123}], "loadDate": "2026-05-04"}, {"id": 10, "batchIdx": 3, "dayIdx": 2, "color": "#C8B6D9", "startTs": "2026-05-05T06:00:00", "startMin": 17699, "size": 37, "role": "done", "stages": [{"stage": 0, "startMin": 17721, "endMin": 17995}, {"stage": 2, "startMin": 18130, "endMin": 18408}, {"stage": 3, "startMin": 18953, "endMin": 19237}, {"stage": 4, "startMin": 19289, "endMin": 20503}, {"stage": 5, "startMin": 19604, "endMin": 20817}, {"stage": 6, "startMin": 20319, "endMin": 20672}, {"stage": 7, "startMin": 20657, "endMin": 20663}, {"stage": 9, "startMin": 17967, "endMin": 21393}, {"stage": 11, "startMin": 21455, "endMin": 21518}], "loadDate": "2026-05-05"}, {"id": 11, "batchIdx": 4, "dayIdx": 3, "color": "#B2C9A8", "startTs": "2026-05-06T06:00:00", "startMin": 19248, "size": 48, "role": "done", "stages": [{"stage": 0, "startMin": 19327, "endMin": 20082}, {"stage": 2, "startMin": 19725, "endMin": 20000}, {"stage": 3, "startMin": 20505, "endMin": 21125}, {"stage": 4, "startMin": 21433, "endMin": 21901}, {"stage": 5, "startMin": 21699, "endMin": 22170}, {"stage": 6, "startMin": 22001, "endMin": 22348}, {"stage": 7, "startMin": 22279, "endMin": 22618}, {"stage": 8, "startMin": 22286, "endMin": 22292}, {"stage": 9, "startMin": 19573, "endMin": 22891}, {"stage": 11, "startMin": 19268, "endMin": 20146}], "loadDate": "2026-05-06"}, {"id": 12, "batchIdx": 5, "dayIdx": 4, "color": "#E6C494", "startTs": "2026-05-07T06:00:00", "startMin": 20732, "size": 38, "role": "done", "stages": [{"stage": 0, "startMin": 20748, "endMin": 21037}, {"stage": 2, "startMin": 21146, "endMin": 21411}, {"stage": 3, "startMin": 21906, "endMin": 22503}, {"stage": 4, "startMin": 22172, "endMin": 22214}, {"stage": 5, "startMin": 22529, "endMin": 22533}, {"stage": 9, "startMin": 20994, "endMin": 22774}, {"stage": 11, "startMin": 20755, "endMin": 21515}], "loadDate": "2026-05-07"}, {"id": 13, "batchIdx": 6, "dayIdx": 5, "color": "#D9A8B2", "startTs": "2026-05-08T06:00:00", "startMin": 22587, "size": 37, "role": "in-flight-backup", "stages": [{"stage": 0, "startMin": 22620, "endMin": 22874}, {"stage": 2, "startMin": 22920, "endMin": 22984}, {"stage": 9, "startMin": 22866, "endMin": 22980}], "loadDate": "2026-05-08"}], "robotBusyUntil": 0};
+const HISTORY_DATA = {"anchorTs":"2026-04-23T00:00:00","batches":[{"loadDate":"2026-04-23","color":"#EFD9A3","size":33,"loadStart":601,"unloadMin":9613,"dips":[{"n":1,"conveyor":"Prime","startMin":747,"endMin":958},{"n":2,"conveyor":"Prime","startMin":1189,"endMin":1397},{"n":3,"conveyor":"Backup","startMin":1531,"endMin":1677},{"n":4,"conveyor":"Backup","startMin":1860,"endMin":4631},{"n":5,"conveyor":"Backup","startMin":4482,"endMin":5163},{"n":6,"conveyor":"Backup","startMin":4768,"endMin":5427},{"n":7,"conveyor":"Backup","startMin":5103,"endMin":5729},{"n":8,"conveyor":"Backup","startMin":5730,"endMin":6057}]},{"loadDate":"2026-04-24","color":"#E8A9A0","size":43,"loadStart":1952,"unloadMin":8355,"dips":[{"n":1,"conveyor":"Prime","startMin":1958,"endMin":3546},{"n":2,"conveyor":"Prime","startMin":3597,"endMin":3869},{"n":3,"conveyor":"Backup","startMin":3925,"endMin":4386},{"n":4,"conveyor":"Backup","startMin":4171,"endMin":6601},{"n":5,"conveyor":"Backup","startMin":4673,"endMin":7036},{"n":6,"conveyor":"Backup","startMin":5272,"endMin":7391},{"n":7,"conveyor":"Backup","startMin":6374,"endMin":7600},{"n":8,"conveyor":"Backup","startMin":6852,"endMin":7275}]},{"loadDate":"2026-04-26","color":"#9FC9C3","size":63,"loadStart":4655,"unloadMin":9622,"dips":[{"n":1,"conveyor":"Prime","startMin":5439,"endMin":5711},{"n":2,"conveyor":"Prime","startMin":5569,"endMin":6053},{"n":3,"conveyor":"Backup","startMin":5907,"endMin":6367},{"n":4,"conveyor":"Backup","startMin":6239,"endMin":6841},{"n":5,"conveyor":"Backup","startMin":6698,"endMin":7263},{"n":6,"conveyor":"Backup","startMin":7147,"endMin":8338},{"n":7,"conveyor":"Backup","startMin":7841,"endMin":8742},{"n":8,"conveyor":"Backup","startMin":8273,"endMin":8276}]},{"loadDate":"2026-04-28","color":"#C8B6D9","size":36,"loadStart":7400,"unloadMin":11328,"dips":[{"n":1,"conveyor":"Prime","startMin":7430,"endMin":7738},{"n":2,"conveyor":"Prime","startMin":7896,"endMin":8181},{"n":3,"conveyor":"Backup","startMin":8371,"endMin":8655},{"n":4,"conveyor":"Backup","startMin":9079,"endMin":9550},{"n":5,"conveyor":"Backup","startMin":9443,"endMin":10064},{"n":6,"conveyor":"Backup","startMin":9910,"endMin":10321}]},{"loadDate":"2026-04-29","color":"#B2C9A8","size":44,"loadStart":8701,"unloadMin":13024,"dips":[{"n":1,"conveyor":"Prime","startMin":8779,"endMin":9529},{"n":2,"conveyor":"Prime","startMin":9166,"endMin":10042},{"n":3,"conveyor":"Backup","startMin":9643,"endMin":10298},{"n":4,"conveyor":"Backup","startMin":10066,"endMin":10554},{"n":5,"conveyor":"Backup","startMin":10458,"endMin":11325},{"n":6,"conveyor":"Backup","startMin":11341,"endMin":11804},{"n":7,"conveyor":"Backup","startMin":11601,"endMin":12040},{"n":8,"conveyor":"Backup","startMin":11990,"endMin":11994}]},{"loadDate":"2026-04-30","color":"#E6C494","size":38,"loadStart":10430,"unloadMin":15428,"dips":[{"n":1,"conveyor":"Prime","startMin":10491,"endMin":10802},{"n":2,"conveyor":"Prime","startMin":10922,"endMin":11193},{"n":3,"conveyor":"Backup","startMin":11370,"endMin":11587},{"n":4,"conveyor":"Backup","startMin":11820,"endMin":12522},{"n":5,"conveyor":"Backup","startMin":12868,"endMin":13802},{"n":6,"conveyor":"Backup","startMin":13481,"endMin":14273},{"n":7,"conveyor":"Backup","startMin":13917,"endMin":14320},{"n":8,"conveyor":"Backup","startMin":14291,"endMin":14298}]},{"loadDate":"2026-05-01","color":"#D9A8B2","size":42,"loadStart":11837,"unloadMin":16886,"dips":[{"n":1,"conveyor":"Prime","startMin":12013,"endMin":12587},{"n":2,"conveyor":"Prime","startMin":12108,"endMin":13785},{"n":3,"conveyor":"Backup","startMin":13030,"endMin":14262},{"n":4,"conveyor":"Backup","startMin":13837,"endMin":14551},{"n":5,"conveyor":"Backup","startMin":14284,"endMin":15387},{"n":6,"conveyor":"Backup","startMin":14552,"endMin":15837},{"n":7,"conveyor":"Backup","startMin":15406,"endMin":16122}]},{"loadDate":"2026-05-02","color":"#EFD9A3","size":2,"loadStart":13189,"unloadMin":16779,"dips":[{"n":1,"conveyor":"Backup","startMin":13832,"endMin":14238},{"n":2,"conveyor":"Backup","startMin":14325,"endMin":14330},{"n":3,"conveyor":"Backup","startMin":14883,"endMin":14888},{"n":4,"conveyor":"Backup","startMin":15400,"endMin":15404}]},{"loadDate":"2026-05-03","color":"#E8A9A0","size":37,"loadStart":14556,"unloadMin":18511,"dips":[{"n":1,"conveyor":"Prime","startMin":14575,"endMin":14834},{"n":2,"conveyor":"Prime","startMin":15033,"endMin":15315},{"n":3,"conveyor":"Backup","startMin":15439,"endMin":15672},{"n":4,"conveyor":"Backup","startMin":15838,"endMin":16064},{"n":5,"conveyor":"Backup","startMin":16405,"endMin":17233},{"n":6,"conveyor":"Backup","startMin":16788,"endMin":17550},{"n":7,"conveyor":"Backup","startMin":17114,"endMin":17776},{"n":8,"conveyor":"Backup","startMin":17415,"endMin":17567}]},{"loadDate":"2026-05-04","color":"#9FC9C3","size":36,"loadStart":16123,"unloadMin":20063,"dips":[{"n":1,"conveyor":"Prime","startMin":16144,"endMin":16390},{"n":2,"conveyor":"Prime","startMin":16498,"endMin":16775},{"n":3,"conveyor":"Backup","startMin":16888,"endMin":17090},{"n":4,"conveyor":"Backup","startMin":17276,"endMin":17637},{"n":5,"conveyor":"Backup","startMin":18004,"endMin":18504},{"n":6,"conveyor":"Backup","startMin":18748,"endMin":18946},{"n":7,"conveyor":"Backup","startMin":19043,"endMin":19074}]},{"loadDate":"2026-05-05","color":"#C8B6D9","size":37,"loadStart":17699,"unloadMin":21458,"dips":[{"n":1,"conveyor":"Prime","startMin":17721,"endMin":17996},{"n":2,"conveyor":"Prime","startMin":18141,"endMin":18408},{"n":3,"conveyor":"Backup","startMin":18294,"endMin":18741},{"n":4,"conveyor":"Backup","startMin":18652,"endMin":19238},{"n":5,"conveyor":"Backup","startMin":19151,"endMin":20504},{"n":6,"conveyor":"Backup","startMin":19604,"endMin":20817},{"n":7,"conveyor":"Backup","startMin":20319,"endMin":20672},{"n":8,"conveyor":"Backup","startMin":20657,"endMin":20664}]},{"loadDate":"2026-05-06","color":"#B2C9A8","size":48,"loadStart":19248,"unloadMin":20086,"dips":[{"n":1,"conveyor":"Prime","startMin":19327,"endMin":20565},{"n":2,"conveyor":"Prime","startMin":19725,"endMin":21449},{"n":3,"conveyor":"Backup","startMin":20063,"endMin":21715},{"n":4,"conveyor":"Backup","startMin":20505,"endMin":22013},{"n":5,"conveyor":"Backup","startMin":21433,"endMin":21902},{"n":6,"conveyor":"Backup","startMin":21699,"endMin":22170},{"n":7,"conveyor":"Backup","startMin":22001,"endMin":22348}]},{"loadDate":"2026-05-07","color":"#E6C494","size":38,"loadStart":20732,"unloadMin":21455,"dips":[{"n":1,"conveyor":"Prime","startMin":20748,"endMin":21038},{"n":2,"conveyor":"Prime","startMin":21146,"endMin":21412},{"n":3,"conveyor":"Backup","startMin":21467,"endMin":21668},{"n":4,"conveyor":"Backup","startMin":21906,"endMin":22504},{"n":5,"conveyor":"Backup","startMin":22172,"endMin":22215},{"n":6,"conveyor":"Backup","startMin":22529,"endMin":22534}]},{"loadDate":"2026-05-08","color":"#D9A8B2","size":37,"loadStart":22587,"unloadMin":null,"dips":[{"n":1,"conveyor":"Prime","startMin":22620,"endMin":22875},{"n":2,"conveyor":"Prime","startMin":22920,"endMin":22977}]}]};
 
 function renderHistoryGantt() {
   const wrap = document.getElementById('histGanttInner');
   const leg  = document.getElementById('histGanttLegend');
   if (!wrap) return;
+
+  // Legend
   clear(leg);
-  STAGE_NAMES.forEach((n, i) => {
-    const chip = el('span', {class:'chip', style:{background:stageChipBg(i), color:'#12335C', borderColor:stageChipBg(i)}});
-    chip.appendChild(el('span', {class:'chip-dot', style:{color:STAGE_COLORS[i]}}));
-    chip.appendChild(document.createTextNode(' ' + n));
+  [['Prime dip','rgba(10,31,61,.85)',1],['Backup dip','rgba(10,31,61,.85)',.55],['Unload','#8FBF7B',1]].forEach(([lbl,clr,op]) => {
+    const chip = el('span', {style:{display:'inline-flex',alignItems:'center',gap:'5px',fontSize:'11px',color:'var(--navy-deep)',marginRight:'12px'}});
+    chip.appendChild(el('span', {style:{width:'20px',height:'8px',borderRadius:'2px',background:clr,opacity:op,display:'inline-block'}}));
+    chip.appendChild(document.createTextNode(lbl));
     leg.appendChild(chip);
   });
 
   const anchor   = new Date(HISTORY_DATA.anchorTs);
-  // span from first batch load to last batch end + 1 day buffer
-  const totalMin = 16 * 24 * 60;   // 16 days
+  const totalMin = 16 * 24 * 60;  // 16 days from anchor
   clear(wrap);
   const outer = el('div', {style:{position:'relative'}});
 
-  // Header
-  const hdr = el('div', {style:{display:'flex', borderBottom:'1px solid var(--line)', position:'sticky', top:'0', background:'#fff', zIndex:'3'}});
-  hdr.appendChild(el('div', {style:{width:'140px', padding:'6px 12px', fontSize:'11px', color:'var(--navy-deep)', fontWeight:'600', position:'sticky', left:'0', background:'#fff', zIndex:'4', borderRight:'1px solid var(--line)'}}, 'Batch'));
+  // Header row: one column per day
+  const hdr = el('div', {style:{display:'flex', borderBottom:'1px solid var(--line)', position:'sticky', top:'0', background:'var(--cream,#fff)', zIndex:'3'}});
+  hdr.appendChild(el('div', {style:{width:'130px',flexShrink:'0',padding:'6px 10px',fontSize:'11px',color:'var(--navy-deep)',fontWeight:'600',position:'sticky',left:'0',background:'var(--cream,#fff)',zIndex:'4',borderRight:'1px solid var(--line)'}}, 'Batch'));
   for (let d = 0; d < 16; d++) {
     const at = new Date(anchor); at.setDate(anchor.getDate() + d);
-    const cell = el('div', {style:{flex:'1', padding:'6px 4px', fontSize:'10px', color:'var(--navy-deep)', fontWeight:'600', borderRight:'1px solid var(--line)', minWidth:'0'}});
-    cell.appendChild(document.createTextNode(DAY_SHORT[at.getDay()] + ' '));
-    cell.appendChild(el('span', {class:'text-navy-deep/60 font-normal'}, fmtShortDate(at)));
+    const cell = el('div', {style:{flex:'1',padding:'6px 4px',fontSize:'10px',color:'var(--navy-deep)',fontWeight:'600',borderRight:'1px solid var(--line)',minWidth:'0',whiteSpace:'nowrap'}});
+    cell.textContent = DAY_SHORT[at.getDay()] + ' ' + fmtShortDate(at);
     hdr.appendChild(cell);
   }
   outer.appendChild(hdr);
 
+  function minsFmt(m) {
+    const dt = new Date(anchor.getTime() + m * 60000);
+    return dt.toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit'}) + ' ' + dt.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});
+  }
+  function durFmt(a, b) {
+    const h = Math.floor((b-a)/60), m = (b-a)%60;
+    return h + 'h' + String(m).padStart(2,'0') + 'm';
+  }
+
   for (const b of HISTORY_DATA.batches) {
-    const row = el('div', {style:{display:'flex', alignItems:'center', borderBottom:'1px solid var(--line)'}});
-    const lbl = el('div', {style:{width:'140px', padding:'8px 12px', position:'sticky', left:'0', background:'#fff', zIndex:'2', borderRight:'1px solid var(--line)'}});
-    const lblInner = el('div', {class:'flex items-center gap-2'});
-    lblInner.appendChild(el('span', {class:'w-3 h-3 rounded-full shrink-0', style:{background:b.color}}));
+    const row = el('div', {style:{display:'flex',alignItems:'stretch',borderBottom:'1px solid var(--line)'}});
+
+    // Sticky label
+    const lbl = el('div', {style:{width:'130px',flexShrink:'0',padding:'8px 10px',position:'sticky',left:'0',background:'var(--cream,#fff)',zIndex:'2',borderRight:'1px solid var(--line)',display:'flex',alignItems:'center',gap:'7px'}});
+    lbl.appendChild(el('span', {style:{width:'10px',height:'10px',borderRadius:'50%',flexShrink:'0',background:b.color,display:'inline-block'}}));
     const lblTxt = el('div');
-    const d = new Date(b.loadDate);
-    lblTxt.appendChild(el('div', {class:'text-sm font-medium text-navy-ink'}, fmtShortDate(d)));
-    lblTxt.appendChild(el('div', {class:'text-[10px] uppercase tracking-[.1em] text-navy-deep/55'}, b.size + ' hangers'));
-    lblInner.appendChild(lblTxt);
-    lbl.appendChild(lblInner);
+    lblTxt.appendChild(el('div', {style:{fontSize:'12px',fontWeight:'600',color:'var(--navy-ink)'}, textContent: b.loadDate.slice(5)}));
+    lblTxt.appendChild(el('div', {style:{fontSize:'10px',color:'var(--navy-deep)',opacity:'.6'}, textContent: b.size + ' hangers'}));
+    lbl.appendChild(lblTxt);
     row.appendChild(lbl);
 
-    const track = el('div', {
-      class:'relative gantt-row',
-      style:{flex:'1', background:'repeating-linear-gradient(90deg,transparent 0,transparent calc(100%/384 - 1px),rgba(10,31,61,.04) calc(100%/384 - 1px), rgba(10,31,61,.04) calc(100%/384))'}
-    });
-    b.stages.filter(s => s.startMin < totalMin && s.endMin > 0).forEach(s => {
-      const start = Math.max(0, s.startMin), end = Math.min(totalMin, s.endMin);
-      const left = (start / totalMin) * 100, width = Math.max((end - start) / totalMin * 100, 0.15);
-      const bar = el('div', {
-        class:'gantt-stage',
-        title: STAGE_NAMES[s.stage] + ' · ' + b.loadDate,
-        style:{
-          left: left + '%', width: width + '%',
-          background: s.stage === 11 ? '#8FBF7B' : b.color,
-          border: '1px solid rgba(10,31,61,.2)',
-          opacity: s.stage === 1 ? 0.55 : (s.stage >= 9 ? 0.75 : 1),
-        }
-      });
+    // Track
+    const track = el('div', {style:{flex:'1',position:'relative',height:'40px'}});
+
+    // Load-wait bar (gray, from loadStart to first dip)
+    if (b.loadStart != null && b.dips.length) {
+      const s = b.loadStart, e = b.dips[0].startMin;
+      if (e > s) {
+        const left = (s/totalMin)*100, w = Math.max((e-s)/totalMin*100, 0.1);
+        const bar = el('div', {title:'Load wait: '+minsFmt(s)+' → '+minsFmt(e)+' ('+durFmt(s,e)+')',
+          style:{position:'absolute',top:'13px',height:'14px',left:left+'%',width:w+'%',background:'#aaa',opacity:'.35',borderRadius:'2px'}});
+        track.appendChild(bar);
+      }
+    }
+
+    // Dip bars
+    let primeN = 0, backupN = 0;
+    for (const dip of b.dips) {
+      if (dip.startMin >= totalMin) continue;
+      const s = Math.max(0, dip.startMin), e = Math.min(totalMin, dip.endMin);
+      const left = (s/totalMin)*100, w = Math.max((e-s)/totalMin*100, 0.15);
+      const isPrime = dip.conveyor === 'Prime';
+      isPrime ? primeN++ : backupN++;
+      const label = (isPrime ? 'P' : 'B') + (isPrime ? primeN : backupN);
+      const tip = label + ' · ' + dip.conveyor + ' dip ' + dip.n + '\n' + minsFmt(dip.startMin) + ' → ' + minsFmt(dip.endMin) + ' (' + durFmt(dip.startMin, Math.min(dip.endMin, totalMin)) + ')';
+      const bar = el('div', {title:tip, style:{
+        position:'absolute', top:'9px', height:'22px',
+        left:left+'%', width:w+'%',
+        background:b.color, opacity:isPrime?'1':'0.6',
+        borderRadius:'3px', border:'1px solid rgba(10,31,61,.18)',
+        display:'flex', alignItems:'center', justifyContent:'center',
+        overflow:'hidden', cursor:'default'
+      }});
+      bar.appendChild(el('span', {style:{fontSize:'9px',fontWeight:'700',color:'rgba(10,31,61,.6)',pointerEvents:'none'}, textContent:label}));
       track.appendChild(bar);
-    });
+    }
+
+    // Unload marker
+    if (b.unloadMin != null && b.unloadMin < totalMin) {
+      const x = (b.unloadMin/totalMin)*100;
+      const mk = el('div', {title:'Unload: '+minsFmt(b.unloadMin), style:{
+        position:'absolute', top:'8px', height:'24px', width:'4px',
+        left:x+'%', background:'#8FBF7B', borderRadius:'2px', opacity:'.9'
+      }});
+      track.appendChild(mk);
+    }
+
     row.appendChild(track);
     outer.appendChild(row);
   }
   wrap.appendChild(outer);
-  const gw = document.getElementById('histGanttWrap');
-  if (gw) gw.scrollLeft = 0;
 }
 
 // Render history gantt on first visit to tab 9
