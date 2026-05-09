@@ -4669,8 +4669,7 @@ function renderHistoryGantt() {
       const spanS = dip.segs[0][0], spanE = dip.segs[dip.segs.length-1][1];
       const totalActual = dip.segs.reduce((a,[s,e])=>a+(e-s),0);
       const tip = 'Dip ' + dip.n + ' (' + (isPrime?'Prime':'Backup') + ')\n'
-                + minsFmt(spanS) + ' \u2192 ' + minsFmt(spanE) + '\n'
-                + 'Robot work: ' + durFmt(0, totalActual) + ' in ' + dip.segs.length + (dip.segs.length>1?' sessions':' session');
+                + minsFmt(spanS) + ' \u2192 ' + minsFmt(spanE) + '  (' + durFmt(0, spanE - spanS) + ')';
 
       // Faint background span (shows full dip window first→last session)
       if (spanS < totalMin) {
