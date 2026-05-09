@@ -2,6 +2,15 @@
 
 Single-file HTML app. No backend, no build step. All state in `localStorage` under key `cabiran.shellroom.v1`.
 
+## Physical process constraints (hard limits from the plant)
+
+- **Prime dry time — maximum 6 hours** between consecutive Prime dips. The chemistry allows longer, but exceeding 6h means the coat has dried too much and the next dip won't bond correctly. This is a hard upper bound, not a target.
+- **Backup dry time — minimum 8 hours** between consecutive Backup dips. The coat must cure for at least 8h before re-dipping; going under this risks delamination. This is a hard lower bound.
+- **Batch size — maximum 38 hangers** (Prime conveyor physical capacity: 19 pairs × 2 columns).
+- **Single robot** — one robot on a 7th-axis rail serves both Prime and Backup. All dip operations are serial through this shared resource.
+
+These four values are invariants — they come from chemistry and equipment, not from scheduling policy. Any simulation or planning tool must respect them.
+
 ## Defaults chosen
 
 - **Cycle times (min per pair of shells):** dip1=15, dip2=15, dip3–7=12, seal=18. Brief did not specify; these are plausible values that produce a visually readable 7-day schedule. User can change freely.
