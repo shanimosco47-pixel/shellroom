@@ -4602,6 +4602,17 @@ function renderHistoryGantt() {
   }
   outer.appendChild(hdr);
 
+  // Helper: add day vertical gridlines to any track element
+  function addGridlines(track) {
+    for (let d = 1; d < 16; d++) {
+      track.appendChild(el('div', {style:{
+        position:'absolute', top:'0', bottom:'0', width:'1px',
+        left: (d/16*100) + '%',
+        background:'rgba(10,31,61,.07)', pointerEvents:'none'
+      }}));
+    }
+  }
+
   // ── Robot row ────────────────────────────────────────────────────────
   const robotRow = el('div', {style:{display:'flex',alignItems:'stretch',borderBottom:'2px solid var(--line)',background:'rgba(10,31,61,.02)'}});
   const robotLbl = mkLabel({display:'flex',flexDirection:'column',justifyContent:'center'});
@@ -4609,6 +4620,7 @@ function renderHistoryGantt() {
   robotLbl.appendChild(el('div', {style:{fontSize:'9px',color:'var(--navy-deep)',opacity:'.5'}, textContent:'actual picks · no overlaps'}));
   robotRow.appendChild(robotLbl);
   const robotTrack = el('div', {style:{flex:'1',position:'relative',height:'28px'}});
+  addGridlines(robotTrack);
   ROBOT_SEGS.forEach(([s, e, ci]) => {
     const left = (Math.max(0,s)/totalMin)*100;
     const w = Math.max((Math.min(totalMin,e)-Math.max(0,s))/totalMin*100, 0.06);
@@ -4626,15 +4638,17 @@ function renderHistoryGantt() {
   for (const b of HISTORY_DATA.batches) {
     const row = el('div', {style:{display:'flex',alignItems:'stretch',borderBottom:'1px solid var(--line)'}});
 
-    const lbl = mkLabel({display:'flex',alignItems:'center',gap:'7px'});
-    lbl.appendChild(el('span', {style:{width:'10px',height:'10px',borderRadius:'50%',flexShrink:'0',background:b.color,display:'inline-block'}}));
-    const lblTxt = el('div');
-    lblTxt.appendChild(el('div', {style:{fontSize:'12px',fontWeight:'600',color:'var(--navy-ink)'}, textContent: b.loadDate.slice(5)}));
-    lblTxt.appendChild(el('div', {style:{fontSize:'11px',fontWeight:'600',color:'var(--navy-deep)'}, textContent: b.size + ' מתלים'}));
-    lbl.appendChild(lblTxt);
+    // Label: [dot + count] on first line, date on second
+    const lbl = mkLabel({display:'flex',alignItems:'center',gap:'6px'});
+    const dotWrap = el('div', {style:{display:'flex',flexDirection:'column',alignItems:'center',gap:'2px',flexShrink:'0'}});
+    dotWrap.appendChild(el('span', {style:{width:'10px',height:'10px',borderRadius:'50%',background:b.color,display:'block'}}));
+    dotWrap.appendChild(el('span', {style:{fontSize:'10px',fontWeight:'700',color:'var(--navy-ink)',lineHeight:'1',whiteSpace:'nowrap'}, textContent: b.size + 'מ'}));
+    lbl.appendChild(dotWrap);
+    lbl.appendChild(el('div', {style:{fontSize:'12px',fontWeight:'600',color:'var(--navy-ink)'}, textContent: b.loadDate.slice(5)}));
     row.appendChild(lbl);
 
     const track = el('div', {style:{flex:'1',position:'relative',height:'52px'}});
+    addGridlines(track);
 
     // Load-wait bar
     if (b.loadStart != null && b.dips.length) {
