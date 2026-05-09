@@ -4550,6 +4550,10 @@ function boot() {
 window.addEventListener('DOMContentLoaded', boot);
 
 // ── History Gantt ─────────────────────────────────────────────────────────────
+// Robot actual-pick segments: [startMin, endMin, colorIndex(0-6)]
+const ROBOT_SEGS = [[747,840,0],[851,958,0],[1189,1238,0],[1244,1397,0],[1531,1677,0],[1860,1952,0],[1958,1972,1],[3288,3546,1],[3597,3869,1],[3925,3930,1],[4155,4371,1],[4381,4386,1],[4387,4402,0],[4482,4542,0],[4566,4648,0],[4648,4653,1],[4673,4694,1],[4768,5116,0],[5142,5176,0],[5176,5181,1],[5211,5248,0],[5256,5267,0],[5272,5344,1],[5402,5433,0],[5433,5437,1],[5439,5557,2],[5569,5711,2],[5724,5734,0],[5740,5751,1],[5765,5830,2],[5837,6053,2],[6053,6057,0],[6077,6088,1],[6096,6129,2],[6149,6182,2],[6201,6367,2],[6374,6464,1],[6489,6601,1],[6602,6737,2],[6743,6790,2],[6813,6841,2],[6842,7036,1],[7037,7104,2],[7119,7263,2],[7264,7391,1],[7430,7559,3],[7561,7573,1],[7593,7600,1],[7619,7626,2],[7626,7738,3],[7755,7895,2],[7896,7976,3],[7983,8086,3],[8094,8181,3],[8221,8338,2],[8371,8416,3],[8479,8573,3],[8595,8655,3],[8718,8742,2],[8779,8819,4],[8829,9003,4],[9011,9023,4],[9033,9079,4],[9079,9090,3],[9090,9095,4],[9096,9163,3],[9166,9435,4],[9443,9518,3],[9518,9529,4],[9530,9550,3],[9563,9581,4],[9581,9586,3],[9643,9866,4],[9881,9895,4],[9900,9905,3],[9905,9910,4],[9910,10031,3],[10031,10042,4],[10043,10064,3],[10066,10181,4],[10203,10206,3],[10206,10216,4],[10217,10286,3],[10287,10298,4],[10298,10321,3],[10329,10423,4],[10453,10461,4],[10491,10546,5],[10547,10554,4],[10556,10622,5],[10635,10754,5],[10757,10761,4],[10788,10802,5],[10802,10919,4],[10922,11193,5],[11210,11260,4],[11281,11325,4],[11341,11355,4],[11370,11570,5],[11581,11587,5],[11587,11590,4],[11601,11648,4],[11654,11683,4],[11712,11804,4],[11820,11880,5],[11916,11970,5],[11990,12012,4],[12013,12016,6],[12017,12040,4],[12045,12050,5],[12057,12077,5],[12108,12227,6],[12256,12393,6],[12394,12437,5],[12501,12507,6],[12507,12522,5],[12580,12736,6],[12745,12858,6],[12868,12971,5],[13025,13187,6],[13398,13448,6],[13481,13546,5],[13613,13634,5],[13648,13691,5],[13713,13758,5],[13779,13785,6],[13785,13802,5],[13832,13837,0],[13837,13876,6],[13911,13916,6],[13917,13999,5],[14226,14234,5],[14234,14238,0],[14238,14257,5],[14258,14262,6],[14262,14273,5],[14284,14289,6],[14291,14320,5],[14325,14330,0],[14330,14458,6],[14479,14529,6],[14535,14555,6],[14575,14834,1],[14883,14888,0],[14888,15025,6],[15033,15169,1],[15179,15315,1],[15324,15387,6],[15400,15404,0],[15406,15422,6],[15439,15506,1],[15513,15545,1],[15551,15557,1],[15567,15672,1],[15698,15837,6],[15838,15997,1],[16022,16064,1],[16068,16122,6],[16144,16317,2],[16323,16390,2],[16405,16498,1],[16498,16620,2],[16637,16775,2],[16788,16839,1],[16850,16879,1],[16888,17090,2],[17114,17233,1],[17246,17267,1],[17276,17409,2],[17415,17439,1],[17478,17550,1],[17562,17567,1],[17573,17637,2],[17677,17688,1],[17721,17765,3],[17765,17776,1],[17782,17996,3],[18004,18112,2],[18141,18408,3],[18416,18504,2],[18517,18527,3],[18534,18741,3],[18748,18831,2],[18871,18946,2],[18953,19036,3],[19043,19074,2],[19119,19238,3],[19289,19321,3],[19327,19342,4],[19350,19589,4],[19604,19721,3],[19725,19739,4],[19757,20000,4],[20005,20015,3],[20025,20059,3],[20063,20283,4],[20319,20414,3],[20443,20504,3],[20505,20516,4],[20554,20650,4],[20657,20672,3],[20682,20732,4],[20748,20790,5],[20790,20817,3],[20821,21038,5],[21076,21126,4],[21146,21412,5],[21433,21454,4],[21467,21668,5],[21699,21902,4],[21906,21948,5],[22001,22170,4],[22172,22232,5],[22259,22264,5],[22286,22348,4],[22366,22442,5],[22450,22504,5],[22529,22534,5],[22606,22619,4],[22620,22761,6],[22769,22875,6],[22920,22977,6]];
+const HIST_COLORS = ["#EFD9A3","#E8A9A0","#9FC9C3","#C8B6D9","#B2C9A8","#E6C494","#D9A8B2"];
+
 const HISTORY_DATA = {"anchorTs":"2026-04-23T00:00:00","batches":[{"loadDate":"2026-04-23","color":"#EFD9A3","size":33,"loadStart":601,"unloadMin":9613,"dips":[{"n":1,"conveyor":"Prime","startMin":747,"endMin":958},{"n":2,"conveyor":"Prime","startMin":1189,"endMin":1397},{"n":3,"conveyor":"Backup","startMin":1531,"endMin":1677},{"n":4,"conveyor":"Backup","startMin":1860,"endMin":4631},{"n":5,"conveyor":"Backup","startMin":4482,"endMin":5163},{"n":6,"conveyor":"Backup","startMin":4768,"endMin":5427},{"n":7,"conveyor":"Backup","startMin":5103,"endMin":5729},{"n":8,"conveyor":"Backup","startMin":5730,"endMin":6057}]},{"loadDate":"2026-04-24","color":"#E8A9A0","size":43,"loadStart":1952,"unloadMin":8355,"dips":[{"n":1,"conveyor":"Prime","startMin":1958,"endMin":3546},{"n":2,"conveyor":"Prime","startMin":3597,"endMin":3869},{"n":3,"conveyor":"Backup","startMin":3925,"endMin":4386},{"n":4,"conveyor":"Backup","startMin":4171,"endMin":6601},{"n":5,"conveyor":"Backup","startMin":4673,"endMin":7036},{"n":6,"conveyor":"Backup","startMin":5272,"endMin":7391},{"n":7,"conveyor":"Backup","startMin":6374,"endMin":7600},{"n":8,"conveyor":"Backup","startMin":6852,"endMin":7275}]},{"loadDate":"2026-04-26","color":"#9FC9C3","size":63,"loadStart":4655,"unloadMin":9622,"dips":[{"n":1,"conveyor":"Prime","startMin":5439,"endMin":5711},{"n":2,"conveyor":"Prime","startMin":5569,"endMin":6053},{"n":3,"conveyor":"Backup","startMin":5907,"endMin":6367},{"n":4,"conveyor":"Backup","startMin":6239,"endMin":6841},{"n":5,"conveyor":"Backup","startMin":6698,"endMin":7263},{"n":6,"conveyor":"Backup","startMin":7147,"endMin":8338},{"n":7,"conveyor":"Backup","startMin":7841,"endMin":8742},{"n":8,"conveyor":"Backup","startMin":8273,"endMin":8276}]},{"loadDate":"2026-04-28","color":"#C8B6D9","size":36,"loadStart":7400,"unloadMin":11328,"dips":[{"n":1,"conveyor":"Prime","startMin":7430,"endMin":7738},{"n":2,"conveyor":"Prime","startMin":7896,"endMin":8181},{"n":3,"conveyor":"Backup","startMin":8371,"endMin":8655},{"n":4,"conveyor":"Backup","startMin":9079,"endMin":9550},{"n":5,"conveyor":"Backup","startMin":9443,"endMin":10064},{"n":6,"conveyor":"Backup","startMin":9910,"endMin":10321}]},{"loadDate":"2026-04-29","color":"#B2C9A8","size":44,"loadStart":8701,"unloadMin":13024,"dips":[{"n":1,"conveyor":"Prime","startMin":8779,"endMin":9529},{"n":2,"conveyor":"Prime","startMin":9166,"endMin":10042},{"n":3,"conveyor":"Backup","startMin":9643,"endMin":10298},{"n":4,"conveyor":"Backup","startMin":10066,"endMin":10554},{"n":5,"conveyor":"Backup","startMin":10458,"endMin":11325},{"n":6,"conveyor":"Backup","startMin":11341,"endMin":11804},{"n":7,"conveyor":"Backup","startMin":11601,"endMin":12040},{"n":8,"conveyor":"Backup","startMin":11990,"endMin":11994}]},{"loadDate":"2026-04-30","color":"#E6C494","size":38,"loadStart":10430,"unloadMin":15428,"dips":[{"n":1,"conveyor":"Prime","startMin":10491,"endMin":10802},{"n":2,"conveyor":"Prime","startMin":10922,"endMin":11193},{"n":3,"conveyor":"Backup","startMin":11370,"endMin":11587},{"n":4,"conveyor":"Backup","startMin":11820,"endMin":12522},{"n":5,"conveyor":"Backup","startMin":12868,"endMin":13802},{"n":6,"conveyor":"Backup","startMin":13481,"endMin":14273},{"n":7,"conveyor":"Backup","startMin":13917,"endMin":14320},{"n":8,"conveyor":"Backup","startMin":14291,"endMin":14298}]},{"loadDate":"2026-05-01","color":"#D9A8B2","size":42,"loadStart":11837,"unloadMin":16886,"dips":[{"n":1,"conveyor":"Prime","startMin":12013,"endMin":12587},{"n":2,"conveyor":"Prime","startMin":12108,"endMin":13785},{"n":3,"conveyor":"Backup","startMin":13030,"endMin":14262},{"n":4,"conveyor":"Backup","startMin":13837,"endMin":14551},{"n":5,"conveyor":"Backup","startMin":14284,"endMin":15387},{"n":6,"conveyor":"Backup","startMin":14552,"endMin":15837},{"n":7,"conveyor":"Backup","startMin":15406,"endMin":16122}]},{"loadDate":"2026-05-02","color":"#EFD9A3","size":2,"loadStart":13189,"unloadMin":16779,"dips":[{"n":1,"conveyor":"Backup","startMin":13832,"endMin":14238},{"n":2,"conveyor":"Backup","startMin":14325,"endMin":14330},{"n":3,"conveyor":"Backup","startMin":14883,"endMin":14888},{"n":4,"conveyor":"Backup","startMin":15400,"endMin":15404}]},{"loadDate":"2026-05-03","color":"#E8A9A0","size":37,"loadStart":14556,"unloadMin":18511,"dips":[{"n":1,"conveyor":"Prime","startMin":14575,"endMin":14834},{"n":2,"conveyor":"Prime","startMin":15033,"endMin":15315},{"n":3,"conveyor":"Backup","startMin":15439,"endMin":15672},{"n":4,"conveyor":"Backup","startMin":15838,"endMin":16064},{"n":5,"conveyor":"Backup","startMin":16405,"endMin":17233},{"n":6,"conveyor":"Backup","startMin":16788,"endMin":17550},{"n":7,"conveyor":"Backup","startMin":17114,"endMin":17776},{"n":8,"conveyor":"Backup","startMin":17415,"endMin":17567}]},{"loadDate":"2026-05-04","color":"#9FC9C3","size":36,"loadStart":16123,"unloadMin":20063,"dips":[{"n":1,"conveyor":"Prime","startMin":16144,"endMin":16390},{"n":2,"conveyor":"Prime","startMin":16498,"endMin":16775},{"n":3,"conveyor":"Backup","startMin":16888,"endMin":17090},{"n":4,"conveyor":"Backup","startMin":17276,"endMin":17637},{"n":5,"conveyor":"Backup","startMin":18004,"endMin":18504},{"n":6,"conveyor":"Backup","startMin":18748,"endMin":18946},{"n":7,"conveyor":"Backup","startMin":19043,"endMin":19074}]},{"loadDate":"2026-05-05","color":"#C8B6D9","size":37,"loadStart":17699,"unloadMin":21458,"dips":[{"n":1,"conveyor":"Prime","startMin":17721,"endMin":17996},{"n":2,"conveyor":"Prime","startMin":18141,"endMin":18408},{"n":3,"conveyor":"Backup","startMin":18294,"endMin":18741},{"n":4,"conveyor":"Backup","startMin":18652,"endMin":19238},{"n":5,"conveyor":"Backup","startMin":19151,"endMin":20504},{"n":6,"conveyor":"Backup","startMin":19604,"endMin":20817},{"n":7,"conveyor":"Backup","startMin":20319,"endMin":20672},{"n":8,"conveyor":"Backup","startMin":20657,"endMin":20664}]},{"loadDate":"2026-05-06","color":"#B2C9A8","size":48,"loadStart":19248,"unloadMin":20086,"dips":[{"n":1,"conveyor":"Prime","startMin":19327,"endMin":20565},{"n":2,"conveyor":"Prime","startMin":19725,"endMin":21449},{"n":3,"conveyor":"Backup","startMin":20063,"endMin":21715},{"n":4,"conveyor":"Backup","startMin":20505,"endMin":22013},{"n":5,"conveyor":"Backup","startMin":21433,"endMin":21902},{"n":6,"conveyor":"Backup","startMin":21699,"endMin":22170},{"n":7,"conveyor":"Backup","startMin":22001,"endMin":22348}]},{"loadDate":"2026-05-07","color":"#E6C494","size":38,"loadStart":20732,"unloadMin":21455,"dips":[{"n":1,"conveyor":"Prime","startMin":20748,"endMin":21038},{"n":2,"conveyor":"Prime","startMin":21146,"endMin":21412},{"n":3,"conveyor":"Backup","startMin":21467,"endMin":21668},{"n":4,"conveyor":"Backup","startMin":21906,"endMin":22504},{"n":5,"conveyor":"Backup","startMin":22172,"endMin":22215},{"n":6,"conveyor":"Backup","startMin":22529,"endMin":22534}]},{"loadDate":"2026-05-08","color":"#D9A8B2","size":37,"loadStart":22587,"unloadMin":null,"dips":[{"n":1,"conveyor":"Prime","startMin":22620,"endMin":22875},{"n":2,"conveyor":"Prime","startMin":22920,"endMin":22977}]}]};
 
 function renderHistoryGantt() {
@@ -4567,13 +4571,29 @@ function renderHistoryGantt() {
   });
 
   const anchor   = new Date(HISTORY_DATA.anchorTs);
-  const totalMin = 16 * 24 * 60;  // 16 days from anchor
+  const totalMin = 16 * 24 * 60;
   clear(wrap);
   const outer = el('div', {style:{position:'relative'}});
 
-  // Header row: one column per day
-  const hdr = el('div', {style:{display:'flex', borderBottom:'1px solid var(--line)', position:'sticky', top:'0', background:'var(--cream,#fff)', zIndex:'3'}});
-  hdr.appendChild(el('div', {style:{width:'130px',flexShrink:'0',padding:'6px 10px',fontSize:'11px',color:'var(--navy-deep)',fontWeight:'600',position:'sticky',left:'0',background:'var(--cream,#fff)',zIndex:'4',borderRight:'1px solid var(--line)'}}, 'Batch'));
+  function minsFmt(m) {
+    const dt = new Date(anchor.getTime() + m * 60000);
+    const dd = String(dt.getDate()).padStart(2,'0'), mo = String(dt.getMonth()+1).padStart(2,'0');
+    const hh = String(dt.getHours()).padStart(2,'0'), mm = String(dt.getMinutes()).padStart(2,'0');
+    return dd+'/'+mo+' '+hh+':'+mm;
+  }
+  function durFmt(a, b) {
+    const h = Math.floor((b-a)/60), m = (b-a)%60;
+    return h + 'h' + String(m).padStart(2,'0') + 'm';
+  }
+  function mkLabel(style, ...children) {
+    const d = el('div', {style:{width:'130px',flexShrink:'0',padding:'6px 10px',position:'sticky',left:'0',background:'var(--cream,#fff)',zIndex:'2',borderRight:'1px solid var(--line)', ...style}});
+    children.forEach(c => typeof c === 'string' ? d.appendChild(document.createTextNode(c)) : d.appendChild(c));
+    return d;
+  }
+
+  // ── Header ──────────────────────────────────────────────────────────
+  const hdr = el('div', {style:{display:'flex',borderBottom:'2px solid var(--line)',position:'sticky',top:'0',background:'var(--cream,#fff)',zIndex:'3'}});
+  hdr.appendChild(mkLabel({fontSize:'11px',color:'var(--navy-deep)',fontWeight:'700',display:'flex',alignItems:'center'}, 'Batch'));
   for (let d = 0; d < 16; d++) {
     const at = new Date(anchor); at.setDate(anchor.getDate() + d);
     const cell = el('div', {style:{flex:'1',padding:'6px 4px',fontSize:'10px',color:'var(--navy-deep)',fontWeight:'600',borderRight:'1px solid var(--line)',minWidth:'0',whiteSpace:'nowrap'}});
@@ -4582,20 +4602,31 @@ function renderHistoryGantt() {
   }
   outer.appendChild(hdr);
 
-  function minsFmt(m) {
-    const dt = new Date(anchor.getTime() + m * 60000);
-    return dt.toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit'}) + ' ' + dt.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});
-  }
-  function durFmt(a, b) {
-    const h = Math.floor((b-a)/60), m = (b-a)%60;
-    return h + 'h' + String(m).padStart(2,'0') + 'm';
-  }
+  // ── Robot row ────────────────────────────────────────────────────────
+  const robotRow = el('div', {style:{display:'flex',alignItems:'stretch',borderBottom:'2px solid var(--line)',background:'rgba(10,31,61,.02)'}});
+  const robotLbl = mkLabel({display:'flex',flexDirection:'column',justifyContent:'center'});
+  robotLbl.appendChild(el('div', {style:{fontSize:'11px',fontWeight:'700',color:'var(--navy-deep)',letterSpacing:'.04em'}, textContent:'🤖 Robot'}));
+  robotLbl.appendChild(el('div', {style:{fontSize:'9px',color:'var(--navy-deep)',opacity:'.5'}, textContent:'actual picks · no overlaps'}));
+  robotRow.appendChild(robotLbl);
+  const robotTrack = el('div', {style:{flex:'1',position:'relative',height:'28px'}});
+  ROBOT_SEGS.forEach(([s, e, ci]) => {
+    const left = (Math.max(0,s)/totalMin)*100;
+    const w = Math.max((Math.min(totalMin,e)-Math.max(0,s))/totalMin*100, 0.06);
+    const seg = el('div', {
+      title: minsFmt(s) + ' → ' + minsFmt(e),
+      style:{position:'absolute',top:'6px',height:'16px',left:left+'%',width:w+'%',
+             background:HIST_COLORS[ci],borderRadius:'1px',opacity:'.85'}
+    });
+    robotTrack.appendChild(seg);
+  });
+  robotRow.appendChild(robotTrack);
+  outer.appendChild(robotRow);
 
+  // ── Batch rows ───────────────────────────────────────────────────────
   for (const b of HISTORY_DATA.batches) {
     const row = el('div', {style:{display:'flex',alignItems:'stretch',borderBottom:'1px solid var(--line)'}});
 
-    // Sticky label
-    const lbl = el('div', {style:{width:'130px',flexShrink:'0',padding:'8px 10px',position:'sticky',left:'0',background:'var(--cream,#fff)',zIndex:'2',borderRight:'1px solid var(--line)',display:'flex',alignItems:'center',gap:'7px'}});
+    const lbl = mkLabel({display:'flex',alignItems:'center',gap:'7px'});
     lbl.appendChild(el('span', {style:{width:'10px',height:'10px',borderRadius:'50%',flexShrink:'0',background:b.color,display:'inline-block'}}));
     const lblTxt = el('div');
     lblTxt.appendChild(el('div', {style:{fontSize:'12px',fontWeight:'600',color:'var(--navy-ink)'}, textContent: b.loadDate.slice(5)}));
@@ -4603,50 +4634,53 @@ function renderHistoryGantt() {
     lbl.appendChild(lblTxt);
     row.appendChild(lbl);
 
-    // Track
-    const track = el('div', {style:{flex:'1',position:'relative',height:'40px'}});
+    const track = el('div', {style:{flex:'1',position:'relative',height:'52px'}});
 
-    // Load-wait bar (gray, from loadStart to first dip)
+    // Load-wait bar
     if (b.loadStart != null && b.dips.length) {
       const s = b.loadStart, e = b.dips[0].startMin;
       if (e > s) {
         const left = (s/totalMin)*100, w = Math.max((e-s)/totalMin*100, 0.1);
-        const bar = el('div', {title:'Load wait: '+minsFmt(s)+' → '+minsFmt(e)+' ('+durFmt(s,e)+')',
-          style:{position:'absolute',top:'13px',height:'14px',left:left+'%',width:w+'%',background:'#aaa',opacity:'.35',borderRadius:'2px'}});
-        track.appendChild(bar);
+        track.appendChild(el('div', {
+          title:'Load wait: '+minsFmt(s)+' → '+minsFmt(e)+' ('+durFmt(s,e)+')',
+          style:{position:'absolute',top:'19px',height:'14px',left:left+'%',width:w+'%',background:'#aaa',opacity:'.3',borderRadius:'2px'}
+        }));
       }
     }
 
     // Dip bars
-    let primeN = 0, backupN = 0;
+    let seq = 0;
     for (const dip of b.dips) {
       if (dip.startMin >= totalMin) continue;
+      seq++;
       const s = Math.max(0, dip.startMin), e = Math.min(totalMin, dip.endMin);
       const left = (s/totalMin)*100, w = Math.max((e-s)/totalMin*100, 0.15);
       const isPrime = dip.conveyor === 'Prime';
-      isPrime ? primeN++ : backupN++;
-      const label = (isPrime ? 'P' : 'B') + (isPrime ? primeN : backupN);
-      const tip = label + ' · ' + dip.conveyor + ' dip ' + dip.n + '\n' + minsFmt(dip.startMin) + ' → ' + minsFmt(dip.endMin) + ' (' + durFmt(dip.startMin, Math.min(dip.endMin, totalMin)) + ')';
+      const tip = 'Dip ' + seq + ' (' + dip.conveyor + ')\n' + minsFmt(dip.startMin) + ' → ' + minsFmt(dip.endMin) + '\n' + durFmt(dip.startMin, Math.min(dip.endMin, totalMin));
       const bar = el('div', {title:tip, style:{
-        position:'absolute', top:'9px', height:'22px',
+        position:'absolute', top:'11px', height:'30px',
         left:left+'%', width:w+'%',
         background:b.color, opacity:isPrime?'1':'0.6',
         borderRadius:'3px', border:'1px solid rgba(10,31,61,.18)',
-        display:'flex', alignItems:'center', justifyContent:'center',
-        overflow:'hidden', cursor:'default'
+        display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
+        overflow:'hidden', cursor:'default', gap:'1px'
       }});
-      bar.appendChild(el('span', {style:{fontSize:'9px',fontWeight:'700',color:'rgba(10,31,61,.6)',pointerEvents:'none'}, textContent:label}));
+      // Dip number (large)
+      bar.appendChild(el('span', {style:{fontSize:'11px',fontWeight:'800',color:'rgba(10,31,61,.7)',lineHeight:'1',pointerEvents:'none'}, textContent: String(seq)}));
+      // Start time (small, only if bar is wide enough)
+      if (w >= 2.2) {
+        bar.appendChild(el('span', {style:{fontSize:'8px',fontWeight:'500',color:'rgba(10,31,61,.55)',lineHeight:'1',pointerEvents:'none'}, textContent: minsFmt(dip.startMin).slice(0,5)}));
+      }
       track.appendChild(bar);
     }
 
     // Unload marker
     if (b.unloadMin != null && b.unloadMin < totalMin) {
       const x = (b.unloadMin/totalMin)*100;
-      const mk = el('div', {title:'Unload: '+minsFmt(b.unloadMin), style:{
-        position:'absolute', top:'8px', height:'24px', width:'4px',
+      track.appendChild(el('div', {title:'Unload: '+minsFmt(b.unloadMin), style:{
+        position:'absolute', top:'10px', height:'32px', width:'4px',
         left:x+'%', background:'#8FBF7B', borderRadius:'2px', opacity:'.9'
-      }});
-      track.appendChild(mk);
+      }}));
     }
 
     row.appendChild(track);
