@@ -7,9 +7,28 @@ Single-file HTML app. No backend, no build step. All state in `localStorage` und
 - **Prime dry time — maximum 6 hours** between consecutive Prime dips. The chemistry allows longer, but exceeding 6h means the coat has dried too much and the next dip won't bond correctly. This is a hard upper bound, not a target.
 - **Backup dry time — minimum 8 hours** between consecutive Backup dips. The coat must cure for at least 8h before re-dipping; going under this risks delamination. This is a hard lower bound.
 - **Batch size — maximum 38 hangers** (Prime conveyor physical capacity: 19 pairs × 2 columns).
+- **Batch size — maximum 38 hangers** (Prime conveyor physical capacity: 19 pairs × 2 columns).
 - **Single robot** — one robot on a 7th-axis rail serves both Prime and Backup. All dip operations are serial through this shared resource.
 
-These four values are invariants — they come from chemistry and equipment, not from scheduling policy. Any simulation or planning tool must respect them.
+These values are invariants — they come from chemistry and equipment, not from scheduling policy. Any simulation or planning tool must respect them.
+
+## Pipeline flow and the real throughput constraint
+
+The system is a pipeline: Prime → Backup → Hang-dry → Unhang → Floor-dry → DeWax.
+
+When Prime is empty (no new batch loaded), it is **not** because of a scheduling failure. It is because Backup is full and cannot yet accept the Prime batch. Backup only frees space when the batch ahead of it has completed all its dips, dried, and been **unhanged** by an operator. Only then can Prime hangers transfer to Backup, and only then can new hangers be loaded onto Prime.
+
+This means the **Unhang operation is the true gating constraint** on pipeline throughput:
+- Unhang speed (operator) determines when Backup space opens
+- Backup space opening determines when Prime can offload
+- Prime offloading determines when the next batch can start
+
+The robot is not idle during this wait — it is working Backup dips for the batch already there. The apparent "gap" between batches on Prime is the pipeline draining downstream, not a scheduling inefficiency.
+
+**Relief actions in priority order:**
+1. Faster unhanging (more operators, dedicated unhang crew) — directly shortens the wait
+2. Expand Backup capacity (more hooks) — allows more batches in-flight simultaneously, reducing back-pressure on Prime
+3. Second robot — speeds up Backup dip cycles so space opens sooner
 
 ## Defaults chosen
 
