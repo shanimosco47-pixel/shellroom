@@ -6,7 +6,7 @@ Single-file HTML app. No backend, no build step. All state in `localStorage` und
 
 - **Prime dry time — maximum 6 hours** between consecutive Prime dips. The chemistry allows longer, but exceeding 6h means the coat has dried too much and the next dip won't bond correctly. This is a hard upper bound, not a target.
 - **Backup dry time — minimum 8 hours** between consecutive Backup dips. The coat must cure for at least 8h before re-dipping; going under this risks delamination. This is a hard lower bound.
-- **Batch size — maximum 38 hangers** (Prime conveyor physical capacity: 19 pairs × 2 columns).
+- **Sandblasting — 1 hour, manual, between Prime dip 1 and Prime dip 2.** After the robot completes the Prime dip 1 sweep (~261 min for a full batch), an operator manually sandblasts all shells before dip 2 can start. Duration ≈ 60 min. This is operator-only; the robot is free but the 99-minute window remaining before the dip-2 deadline is too short to run a Backup dip (261 min), making the Prime phase effectively uninterruptible.
 - **Batch size — maximum 38 hangers** (Prime conveyor physical capacity: 19 pairs × 2 columns).
 - **Single robot** — one robot on a 7th-axis rail serves both Prime and Backup. All dip operations are serial through this shared resource.
 
@@ -142,6 +142,20 @@ Every Size reduction that sheds shells now appends to `state.logs.spills` with
 - `test.html` runs 9 scenarios; scenarios S8 and S9 were pinned as expected-to-fail before
   Phase 2 and are expected to flip to passing after. User runs this manually by opening
   `test.html` in Chrome once the dev server is up.
+
+## Production proforma — Apr 23–May 8, 2026 sample period (`gantt_proforma.html`)
+
+An optimal single-robot schedule was generated for the 13 actual batches from the sample period.
+
+### Model assumptions
+- **Robot cycle time: 7.05 min/hanger** — measured from the actual MES handoff data (average inter-pick gap across all Prime and Backup dip events, Apr 23–May 8). Not a design assumption; derived from real performance.
+- **Robot uptime: 100%** — no planned downtime or breakdown events modeled. This is an upper-bound (best-case) plan. Any robot downtime shifts DeWax-ready dates right by roughly the downtime duration.
+- At the app's default **92% uptime**, sweep times increase ~8% (~22 min/dip), adding approximately **1.5 days** to the total schedule.
+- **Sandblast: 60 min** per batch (operator only, after Prime dip 1). See constraints above.
+- **Batch sizes** taken from actual hanger clusters in the MES data (28–38 hangers, avg 37).
+
+### Key result
+All 13 batches DeWax-ready by **May 12** (vs estimated May 22–25 actual) — a ~10–13 day improvement with **zero constraint violations**. The saving comes entirely from filling robot idle time during mandatory 8-hour Backup dry-wait windows with the next batch's Prime dips. No new equipment required.
 
 ### Explicitly out of scope for this refactor pass
 
